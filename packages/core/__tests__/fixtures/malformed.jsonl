@@ -1,0 +1,6 @@
+this is not json at all
+{"type":"assistant","uuid":"asst-020","timestamp":"2026-03-25T12:00:00.000Z","sessionId":"session-ccc","requestId":"req-020","message":{"id":"msg-020","model":"claude-sonnet-4-20250514","role":"assistant","type":"message","content":[],"usage":{"input_tokens":300,"output_tokens":100,"cache_creation_input_tokens":1000,"cache_read_input_tokens":500},"stop_reason":"end_turn"}}
+{"truncated": true
+{"type":"user","message":{"role":"user","content":"no usage here"}}
+
+{"type":"assistant","uuid":"asst-021","timestamp":"2026-03-25T12:05:00.000Z","sessionId":"session-ccc","requestId":"req-021","message":{"id":"msg-021","model":"claude-sonnet-4-20250514","role":"assistant","type":"message","content":[],"usage":{"input_tokens":400,"output_tokens":150},"stop_reason":"end_turn"}}
