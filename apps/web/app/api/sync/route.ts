@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { verifyAndUpsertUser } from '@/lib/auth';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkAndUpdateRateLimit } from '@/lib/rate-limit';
 import { supabase } from '@/lib/supabase';
 import { validateSyncPayload } from '@/lib/validation';
 
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const { user } = auth;
 
   // 2. Rate limit
-  const rateLimit = await checkRateLimit(user.userId);
+  const rateLimit = await checkAndUpdateRateLimit(user.userId);
   if (!rateLimit.allowed) {
     return NextResponse.json(
       { error: 'rate_limit', message: 'Too many syncs. Try again later.' },

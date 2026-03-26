@@ -3,8 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'edge';
 
+// Edge runtime has no persistent process — create client per request.
+// Uses anon key (not service role) since card data is publicly readable via RLS.
 const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseKey = process.env.SUPABASE_ANON_KEY!;
 
 function formatTokens(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -96,10 +98,11 @@ export async function GET(
   const modelTotal = sortedModels.reduce((s, [, v]) => s + v, 0);
 
   // Build heatmap (last 30 days)
+  const daysByDate = new Map(days.map((d) => [d.date, d]));
   const heatmapDays: number[] = [];
   for (let i = 29; i >= 0; i--) {
     const d = new Date(now.getTime() - i * 86400_000).toISOString().slice(0, 10);
-    const day = days.find((s) => s.date === d);
+    const day = daysByDate.get(d);
     heatmapDays.push(day ? (day.input_tokens ?? 0) + (day.output_tokens ?? 0) : 0);
   }
   const maxHeatmap = Math.max(...heatmapDays, 1);

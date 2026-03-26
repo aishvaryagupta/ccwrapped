@@ -10,6 +10,8 @@ CREATE TABLE users (
   settings        jsonb DEFAULT '{}'::jsonb
 );
 
+CREATE INDEX idx_users_github_login ON users (github_login);
+
 -- Daily stats (one row per user per day, upsert on sync)
 CREATE TABLE daily_stats (
   user_id                 uuid REFERENCES users(id) ON DELETE CASCADE,
@@ -27,17 +29,40 @@ CREATE TABLE daily_stats (
   PRIMARY KEY (user_id, date)
 );
 
+-- Rate limiting (atomic check-and-set)
+CREATE TABLE sync_rate_limits (
+  user_id     uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  last_sync   timestamptz NOT NULL DEFAULT now()
+);
+
 -- Indexes
 CREATE INDEX idx_daily_stats_date ON daily_stats (date);
 CREATE INDEX idx_daily_stats_tokens ON daily_stats (date, (input_tokens + output_tokens) DESC);
-CREATE INDEX idx_daily_stats_synced_at ON daily_stats (user_id, synced_at DESC);
 
 -- Row-level security
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE daily_stats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sync_rate_limits ENABLE ROW LEVEL SECURITY;
 
+-- Read policies (public data for profiles/leaderboard)
 CREATE POLICY "Users are publicly readable"
   ON users FOR SELECT USING (true);
 
 CREATE POLICY "Daily stats are publicly readable"
   ON daily_stats FOR SELECT USING (true);
+
+-- Write policies (defense-in-depth, service role key bypasses these)
+CREATE POLICY "Users can be created by service role"
+  ON users FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can be updated by service role"
+  ON users FOR UPDATE USING (true);
+
+CREATE POLICY "Daily stats can be written by service role"
+  ON daily_stats FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Daily stats can be updated by service role"
+  ON daily_stats FOR UPDATE USING (true);
+
+CREATE POLICY "Rate limits managed by service role"
+  ON sync_rate_limits FOR ALL USING (true);
