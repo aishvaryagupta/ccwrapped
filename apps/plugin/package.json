@@ -1,5 +1,21 @@
 {
   "name": "@devwrapped/plugin",
   "version": "0.1.0",
-  "private": true
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/sync.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/sync.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@devwrapped/core": "0.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "vitest": "^3.1.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  }
 }

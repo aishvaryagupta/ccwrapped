@@ -1,0 +1,7 @@
+{
+  "name": "devwrapped",
+  "description": "Auto-sync your Claude Code usage stats to devwrapped.dev",
+  "author": {
+    "name": "devwrapped"
+  }
+}

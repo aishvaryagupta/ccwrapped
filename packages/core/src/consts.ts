@@ -20,6 +20,17 @@ export const MAX_BACKFILL_DAYS = 30;
 
 // Payload
 export const SCHEMA_VERSION = 1;
+export const CLIENT_VERSION = '0.1.0';
+
+// devwrapped state
+export const CONFIG_DIR_NAME = 'devwrapped';
+export const STATE_FILE_NAME = 'state.json';
+export const MAX_SYNCED_SESSIONS = 500;
+
+// API
+export const API_BASE_URL = 'https://devwrapped.dev/api';
+export const GITHUB_CLIENT_ID = ''; // Placeholder until OAuth App is created
+export const HTTP_TIMEOUT_MS = 5000;
 
 // Model pricing (USD per million tokens) — v0.1 hardcoded
 export interface ModelPricing {

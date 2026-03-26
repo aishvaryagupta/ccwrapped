@@ -117,3 +117,61 @@ export interface ScanOptions {
   since?: DailyDate;
   until?: DailyDate;
 }
+
+// ---------------------------------------------------------------------------
+// State management
+// ---------------------------------------------------------------------------
+
+export interface DevwrappedState {
+  synced_sessions: string[];
+  last_sync: string | null;
+  auth_token: string | null;
+  github_login: string | null;
+  machine_id: string;
+}
+
+// ---------------------------------------------------------------------------
+// Auth types
+// ---------------------------------------------------------------------------
+
+export interface DeviceCodeResponse {
+  device_code: string;
+  user_code: string;
+  verification_uri: string;
+  expires_in: number;
+  interval: number;
+}
+
+export type AuthResult =
+  | { ok: true; token: string; login: string }
+  | { ok: false; error: 'expired' | 'denied' | 'network' | 'not_configured' };
+
+export interface GitHubUser {
+  login: string;
+  avatar_url: string;
+}
+
+// ---------------------------------------------------------------------------
+// HTTP result types
+// ---------------------------------------------------------------------------
+
+export type HttpResult<T = unknown> =
+  | { ok: true; data: T }
+  | { ok: false; error: 'network' | 'auth' | 'server' | 'validation'; message?: string };
+
+export interface SyncMetadata {
+  machine_id: string;
+  last_sync: string;
+  total_tokens: number;
+}
+
+// ---------------------------------------------------------------------------
+// Hook input (from Claude Code stdin)
+// ---------------------------------------------------------------------------
+
+export interface HookInput {
+  session_id: string;
+  transcript_path: string;
+  cwd?: string;
+  hook_event_name?: string;
+}

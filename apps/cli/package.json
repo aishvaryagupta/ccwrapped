@@ -1,5 +1,28 @@
 {
-  "name": "@devwrapped/cli",
+  "name": "devwrapped",
   "version": "0.1.0",
-  "private": true
+  "type": "module",
+  "bin": {
+    "devwrapped": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@devwrapped/core": "0.1.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.1.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist/"
+  ]
 }
