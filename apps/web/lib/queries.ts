@@ -2,8 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 
 function getClient() {
   const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Missing Supabase credentials');
+  const key = process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY');
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -104,58 +104,24 @@ export async function fetchLeaderboard(
       break;
   }
 
-  // Fetch stats with date filter, then aggregate client-side
-  // (Supabase JS doesn't support JOIN + GROUP BY directly)
-  const { data: stats } = await supabase
-    .from('daily_stats')
-    .select('user_id, input_tokens, output_tokens, session_count')
-    .gte('date', sinceDate);
-
-  if (!stats || stats.length === 0) return [];
-
-  // Aggregate by user
-  const userAgg = new Map<
-    string,
-    { totalTokens: number; totalSessions: number }
-  >();
-
-  for (const row of stats) {
-    const existing = userAgg.get(row.user_id);
-    const tokens = (row.input_tokens ?? 0) + (row.output_tokens ?? 0);
-    const sessions = row.session_count ?? 0;
-
-    if (existing) {
-      existing.totalTokens += tokens;
-      existing.totalSessions += sessions;
-    } else {
-      userAgg.set(row.user_id, { totalTokens: tokens, totalSessions: sessions });
-    }
-  }
-
-  // Sort by total tokens
-  const sorted = [...userAgg.entries()]
-    .sort((a, b) => b[1].totalTokens - a[1].totalTokens)
-    .slice(0, 100);
-
-  // Fetch user details
-  const userIds = sorted.map(([id]) => id);
-  const { data: users } = await supabase
-    .from('users')
-    .select('id, github_login, avatar_url')
-    .in('id', userIds);
-
-  const userMap = new Map(
-    (users ?? []).map((u) => [u.id, { login: u.github_login, avatar: u.avatar_url }]),
-  );
-
-  return sorted.map(([userId, agg], i) => {
-    const user = userMap.get(userId);
-    return {
-      rank: i + 1,
-      githubLogin: user?.login ?? 'unknown',
-      avatarUrl: user?.avatar ?? '',
-      totalTokens: agg.totalTokens,
-      totalSessions: agg.totalSessions,
-    };
+  // Server-side aggregation via Postgres RPC
+  const { data, error } = await supabase.rpc('get_leaderboard', {
+    p_since: sinceDate,
+    p_limit: 100,
   });
+
+  if (error || !data) return [];
+
+  return (data as Array<{
+    github_login: string;
+    avatar_url: string;
+    total_tokens: number;
+    total_sessions: number;
+  }>).map((row, i) => ({
+    rank: i + 1,
+    githubLogin: row.github_login,
+    avatarUrl: row.avatar_url ?? '',
+    totalTokens: Number(row.total_tokens),
+    totalSessions: Number(row.total_sessions),
+  }));
 }

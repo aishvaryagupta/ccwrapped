@@ -1,5 +1,3 @@
-import { execFile } from 'node:child_process';
-import { platform } from 'node:os';
 import {
   GITHUB_CLIENT_ID,
   clearState,
@@ -9,6 +7,7 @@ import {
   setAuthToken,
   startDeviceFlow,
 } from '@devwrapped/core';
+import { openUrl } from '../browser.js';
 import { bold, green, red, yellow } from '../ui.js';
 
 export async function run(flags: string[]): Promise<void> {
@@ -50,7 +49,6 @@ export async function run(flags: string[]): Promise<void> {
   console.log();
   console.log(`Opening ${deviceCode.verification_uri} ...`);
 
-  // Open browser
   openUrl(deviceCode.verification_uri);
 
   console.log();
@@ -78,15 +76,4 @@ export async function run(flags: string[]): Promise<void> {
   console.log();
   console.log(green(`Authentication complete. Welcome, @${result.login}!`));
   console.log('Your stats will auto-sync from now on.');
-}
-
-function openUrl(url: string): void {
-  const os = platform();
-  if (os === 'darwin') {
-    execFile('open', [url]);
-  } else if (os === 'win32') {
-    execFile('cmd', ['/c', 'start', '', url]);
-  } else {
-    execFile('xdg-open', [url]);
-  }
 }

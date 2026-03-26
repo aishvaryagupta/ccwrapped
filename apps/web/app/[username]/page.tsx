@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { CopyButton } from '@/components/copy-button';
 import { Heatmap } from '@/components/heatmap';
 import { ModelChart } from '@/components/model-chart';
 import { StatCard } from '@/components/stat-card';
@@ -127,31 +128,34 @@ export default async function ProfilePage({ params }: Props) {
       )}
 
       {/* Daily trend (simple bars) */}
-      {stats.length > 0 && (
-        <div className="bg-gray-900 rounded-lg p-4 sm:p-6 mb-6">
-          <h3 className="text-sm font-medium text-gray-400 mb-4">
-            Daily tokens (last 30 days)
-          </h3>
-          <div className="flex items-end gap-px h-24">
-            {stats.slice(-30).map((day) => {
-              const tokens = day.inputTokens + day.outputTokens;
-              const maxDay = Math.max(
-                ...stats.slice(-30).map((d) => d.inputTokens + d.outputTokens),
-                1,
-              );
-              const height = (tokens / maxDay) * 100;
-              return (
-                <div
-                  key={day.date}
-                  className="flex-1 bg-violet-500/70 rounded-t-sm min-h-[2px]"
-                  style={{ height: `${Math.max(height, 2)}%` }}
-                  title={`${day.date}: ${formatTokens(tokens)}`}
-                />
-              );
-            })}
+      {stats.length > 0 && (() => {
+        const last30 = stats.slice(-30);
+        const maxDay = Math.max(
+          ...last30.map((d) => d.inputTokens + d.outputTokens),
+          1,
+        );
+        return (
+          <div className="bg-gray-900 rounded-lg p-4 sm:p-6 mb-6">
+            <h3 className="text-sm font-medium text-gray-400 mb-4">
+              Daily tokens (last 30 days)
+            </h3>
+            <div className="flex items-end gap-px h-24">
+              {last30.map((day) => {
+                const tokens = day.inputTokens + day.outputTokens;
+                const height = (tokens / maxDay) * 100;
+                return (
+                  <div
+                    key={day.date}
+                    className="flex-1 bg-violet-500/70 rounded-t-sm min-h-[2px]"
+                    style={{ height: `${Math.max(height, 2)}%` }}
+                    title={`${day.date}: ${formatTokens(tokens)}`}
+                  />
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* CTA */}
       <div className="flex flex-col sm:flex-row gap-3 text-sm">
@@ -163,12 +167,7 @@ export default async function ProfilePage({ params }: Props) {
         >
           Download Card
         </a>
-        <button
-          className="bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg px-4 py-2 transition-colors"
-          data-url={`https://devwrapped.dev/@${user.githubLogin}`}
-        >
-          Copy Profile URL
-        </button>
+        <CopyButton text={`https://devwrapped.dev/@${user.githubLogin}`} />
       </div>
     </div>
   );

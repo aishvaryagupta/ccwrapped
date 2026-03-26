@@ -1,6 +1,7 @@
-import { execFile, spawn } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { platform } from 'node:os';
 import { readState } from '@devwrapped/core';
+import { openUrl } from '../browser.js';
 import { green, red } from '../ui.js';
 
 export async function run(flags: string[]): Promise<void> {
@@ -22,17 +23,6 @@ export async function run(flags: string[]): Promise<void> {
   } else {
     openUrl(url);
     console.log(`Opening ${url} ...`);
-  }
-}
-
-function openUrl(url: string): void {
-  const os = platform();
-  if (os === 'darwin') {
-    execFile('open', [url]);
-  } else if (os === 'win32') {
-    execFile('cmd', ['/c', 'start', '', url]);
-  } else {
-    execFile('xdg-open', [url]);
   }
 }
 

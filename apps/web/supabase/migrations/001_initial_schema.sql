@@ -44,25 +44,69 @@ ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE daily_stats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sync_rate_limits ENABLE ROW LEVEL SECURITY;
 
--- Read policies (public data for profiles/leaderboard)
+-- Read-only policies for anon/authenticated clients
+-- Service role key bypasses RLS entirely for writes
 CREATE POLICY "Users are publicly readable"
   ON users FOR SELECT USING (true);
 
 CREATE POLICY "Daily stats are publicly readable"
   ON daily_stats FOR SELECT USING (true);
 
--- Write policies (defense-in-depth, service role key bypasses these)
-CREATE POLICY "Users can be created by service role"
-  ON users FOR INSERT WITH CHECK (true);
+-- No write policies for anon — writes only via service role key
 
-CREATE POLICY "Users can be updated by service role"
-  ON users FOR UPDATE USING (true);
+-- ============================================================
+-- RPC: Atomic rate limit check-and-set
+-- Returns true if allowed, false if rate-limited
+-- ============================================================
+CREATE OR REPLACE FUNCTION check_rate_limit(
+  p_user_id uuid,
+  p_interval_ms bigint
+) RETURNS boolean
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_last_sync timestamptz;
+  v_interval interval;
+BEGIN
+  v_interval := (p_interval_ms || ' milliseconds')::interval;
 
-CREATE POLICY "Daily stats can be written by service role"
-  ON daily_stats FOR INSERT WITH CHECK (true);
+  -- Atomic: insert if not exists, or update if interval has passed
+  INSERT INTO sync_rate_limits (user_id, last_sync)
+  VALUES (p_user_id, now())
+  ON CONFLICT (user_id) DO UPDATE
+    SET last_sync = now()
+    WHERE sync_rate_limits.last_sync < now() - v_interval
+  RETURNING last_sync INTO v_last_sync;
 
-CREATE POLICY "Daily stats can be updated by service role"
-  ON daily_stats FOR UPDATE USING (true);
+  -- If RETURNING produced a row, the insert/update succeeded → allowed
+  RETURN v_last_sync IS NOT NULL;
+END;
+$$;
 
-CREATE POLICY "Rate limits managed by service role"
-  ON sync_rate_limits FOR ALL USING (true);
+-- ============================================================
+-- RPC: Leaderboard query (server-side aggregation)
+-- Returns top users by total tokens for a date range
+-- ============================================================
+CREATE OR REPLACE FUNCTION get_leaderboard(
+  p_since date,
+  p_limit int DEFAULT 100
+) RETURNS TABLE (
+  github_login text,
+  avatar_url text,
+  total_tokens bigint,
+  total_sessions bigint
+)
+LANGUAGE sql STABLE
+AS $$
+  SELECT
+    u.github_login,
+    u.avatar_url,
+    SUM(ds.input_tokens + ds.output_tokens)::bigint AS total_tokens,
+    SUM(ds.session_count)::bigint AS total_sessions
+  FROM daily_stats ds
+  JOIN users u ON u.id = ds.user_id
+  WHERE ds.date >= p_since
+  GROUP BY u.id, u.github_login, u.avatar_url
+  ORDER BY total_tokens DESC
+  LIMIT p_limit;
+$$;
