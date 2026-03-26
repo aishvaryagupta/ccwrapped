@@ -1,16 +1,15 @@
 // Constants
 export {
-  CLIENT_VERSION,
   DEFAULT_CONFIG_PATHS,
   DEFAULT_PRICING,
   MAX_BACKFILL_DAYS,
   MAX_COST_USD_PER_DAY,
   MAX_TOTAL_TOKENS_PER_DAY,
   MIN_COST_USD_PER_DAY,
-  MODEL_PRICING,
   SCHEMA_VERSION,
   getModelPricing,
 } from './consts.js';
+export type { ModelPricing } from './consts.js';
 
 // Types & schemas
 export type {

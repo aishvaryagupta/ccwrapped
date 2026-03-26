@@ -57,8 +57,8 @@ describe('calculateEntryCost', () => {
         cacheReadInputTokens: 0,
       },
     });
-    // Opus: input $15/M + output $75/M = $90
-    expect(calculateEntryCost(entry)).toBeCloseTo(90, 2);
+    // Opus 4.6: input $5/M + output $25/M = $30
+    expect(calculateEntryCost(entry)).toBeCloseTo(30, 2);
   });
 
   it('includes cache token costs', () => {
@@ -173,11 +173,12 @@ describe('buildSyncPayload', () => {
     const entries = [
       makeEntry({ sessionId: 'sess-a' }),
       makeEntry({ sessionId: null }),
+      makeEntry({ sessionId: null }),
     ];
 
     const payload = buildSyncPayload(entries, 'machine-1', '0.1.0');
-    // sess-a + __unknown__ = 2 unique
-    expect(payload.days[0].sessionCount).toBe(2);
+    // sess-a (1 known) + 2 unknown = 3
+    expect(payload.days[0].sessionCount).toBe(3);
   });
 
   it('excludes null model from breakdowns but includes in totals', () => {

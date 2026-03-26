@@ -20,45 +20,45 @@ export const MAX_BACKFILL_DAYS = 30;
 
 // Payload
 export const SCHEMA_VERSION = 1;
-export const CLIENT_VERSION = '0.1.0';
 
 // Model pricing (USD per million tokens) — v0.1 hardcoded
-interface ModelPricing {
+export interface ModelPricing {
   input: number;
   output: number;
   cacheCreation: number;
   cacheRead: number;
 }
 
-export const MODEL_PRICING: Record<string, ModelPricing> = {
-  'claude-opus-4': {
-    input: 15,
-    output: 75,
-    cacheCreation: 18.75,
-    cacheRead: 1.5,
-  },
-  'claude-sonnet-4': {
-    input: 3,
-    output: 15,
-    cacheCreation: 3.75,
-    cacheRead: 0.3,
-  },
-  'claude-haiku-4': {
-    input: 0.8,
-    output: 4,
-    cacheCreation: 1,
-    cacheRead: 0.08,
-  },
-};
+// Ordered longest-prefix-first so the most specific match wins
+const MODEL_PRICING_TABLE: Array<[string, ModelPricing]> = [
+  // Opus 4.6 (latest)
+  ['claude-opus-4-6', { input: 5, output: 25, cacheCreation: 6.25, cacheRead: 0.5 }],
+  // Opus 4.5
+  ['claude-opus-4-5', { input: 5, output: 25, cacheCreation: 6.25, cacheRead: 0.5 }],
+  // Opus (fallback for future opus-4-* variants)
+  ['claude-opus-4', { input: 5, output: 25, cacheCreation: 6.25, cacheRead: 0.5 }],
+  // Sonnet 4.6
+  ['claude-sonnet-4-6', { input: 3, output: 15, cacheCreation: 3.75, cacheRead: 0.3 }],
+  // Sonnet 4.5
+  ['claude-sonnet-4-5', { input: 3, output: 15, cacheCreation: 3.75, cacheRead: 0.3 }],
+  // Sonnet (fallback)
+  ['claude-sonnet-4', { input: 3, output: 15, cacheCreation: 3.75, cacheRead: 0.3 }],
+  // Haiku 4.5
+  ['claude-haiku-4-5', { input: 1, output: 5, cacheCreation: 1.25, cacheRead: 0.1 }],
+  // Haiku (fallback)
+  ['claude-haiku-4', { input: 1, output: 5, cacheCreation: 1.25, cacheRead: 0.1 }],
+];
 
-export const DEFAULT_PRICING: ModelPricing = MODEL_PRICING['claude-sonnet-4'];
+export const DEFAULT_PRICING: ModelPricing = {
+  input: 3, output: 15, cacheCreation: 3.75, cacheRead: 0.3,
+};
 
 /**
  * Match a full model name (e.g. "claude-opus-4-6") to its pricing
- * by checking if the model starts with a known prefix.
+ * using longest-prefix-first matching.
  */
 export function getModelPricing(modelName: string): ModelPricing {
-  for (const [prefix, pricing] of Object.entries(MODEL_PRICING)) {
+  for (const [prefix, pricing] of MODEL_PRICING_TABLE) {
     if (modelName.startsWith(prefix)) {
       return pricing;
     }

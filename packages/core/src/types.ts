@@ -40,7 +40,7 @@ export type SessionId = InferOutput<typeof SessionIdSchema>;
 
 export const UsageEntrySchema = object({
   sessionId: optional(string()),
-  timestamp: string(),
+  timestamp: pipe(string(), minLength(10)),
   requestId: optional(string()),
   message: object({
     id: optional(string()),
@@ -88,7 +88,7 @@ export const ModelBreakdownSchema = object({
 export type ModelBreakdown = InferOutput<typeof ModelBreakdownSchema>;
 
 export const DaySummarySchema = object({
-  date: string(),
+  date: pipe(string(), regex(/^\d{4}-\d{2}-\d{2}$/)),
   inputTokens: pipe(number(), integer(), minValue(0)),
   outputTokens: pipe(number(), integer(), minValue(0)),
   cacheCreationTokens: pipe(number(), integer(), minValue(0)),

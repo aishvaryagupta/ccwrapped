@@ -1,5 +1,4 @@
 import { createReadStream, existsSync } from 'node:fs';
-import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline';
 import fg from 'fast-glob';
@@ -69,13 +68,13 @@ function createDedupeKey(
 // Date extraction
 // ---------------------------------------------------------------------------
 
-function extractDateUTC(isoTimestamp: string): DailyDate {
+function extractDateUTC(isoTimestamp: string): DailyDate | null {
   const dateStr = isoTimestamp.slice(0, 10);
   const result = safeParse(DailyDateSchema, dateStr);
   if (result.success) {
     return result.output;
   }
-  return dateStr as DailyDate;
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -114,6 +113,8 @@ export async function parseTranscriptFile(
     }
 
     const date = extractDateUTC(entry.timestamp);
+    if (!date) continue;
+
     const usage = entry.message.usage;
 
     entries.push({
@@ -169,6 +170,7 @@ export async function scanAllFiles(
       cwd: dir,
       absolute: true,
       onlyFiles: true,
+      followSymbolicLinks: false,
     });
     allFiles.push(...files);
   }

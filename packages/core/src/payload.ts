@@ -75,6 +75,7 @@ export function buildSyncPayload(
     let costUSD = 0;
 
     const sessions = new Set<string>();
+    let unknownSessionCount = 0;
     const projects = new Set<string>();
     const modelAgg = new Map<
       string,
@@ -91,7 +92,7 @@ export function buildSyncPayload(
       if (entry.sessionId) {
         sessions.add(entry.sessionId);
       } else {
-        sessions.add('__unknown__');
+        unknownSessionCount++;
       }
 
       projects.add(entry.projectId);
@@ -142,7 +143,7 @@ export function buildSyncPayload(
       cacheCreationTokens,
       cacheReadTokens,
       costUSD: Math.round(costUSD * 10000) / 10000,
-      sessionCount: sessions.size,
+      sessionCount: sessions.size + unknownSessionCount,
       projectCount: projects.size,
       modelBreakdowns,
     });
