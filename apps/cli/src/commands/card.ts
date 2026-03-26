@@ -1,4 +1,4 @@
-import { exec } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { platform } from 'node:os';
 import { readState } from '@devwrapped/core';
 import { green, red } from '../ui.js';
@@ -16,13 +16,43 @@ export async function run(flags: string[]): Promise<void> {
   const url = `https://devwrapped.dev/@${state.github_login}`;
 
   if (flags.includes('--copy')) {
-    const cmd = platform() === 'darwin' ? 'pbcopy' : 'xclip -selection clipboard';
-    exec(`echo -n ${JSON.stringify(url)} | ${cmd}`);
+    copyToClipboard(url);
     console.log(green('Card URL copied to clipboard!'));
     console.log(url);
   } else {
-    const openCmd = platform() === 'darwin' ? 'open' : 'xdg-open';
-    exec(`${openCmd} ${JSON.stringify(url)}`);
+    openUrl(url);
     console.log(`Opening ${url} ...`);
   }
+}
+
+function openUrl(url: string): void {
+  const os = platform();
+  if (os === 'darwin') {
+    execFile('open', [url]);
+  } else if (os === 'win32') {
+    execFile('cmd', ['/c', 'start', '', url]);
+  } else {
+    execFile('xdg-open', [url]);
+  }
+}
+
+function copyToClipboard(text: string): void {
+  const os = platform();
+  let cmd: string;
+  let args: string[];
+
+  if (os === 'darwin') {
+    cmd = 'pbcopy';
+    args = [];
+  } else if (os === 'win32') {
+    cmd = 'clip';
+    args = [];
+  } else {
+    cmd = 'xclip';
+    args = ['-selection', 'clipboard'];
+  }
+
+  const proc = spawn(cmd, args, { stdio: ['pipe', 'ignore', 'ignore'] });
+  proc.stdin.write(text);
+  proc.stdin.end();
 }

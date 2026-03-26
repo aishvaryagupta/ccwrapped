@@ -1,4 +1,4 @@
-import { exec } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { platform } from 'node:os';
 import {
   GITHUB_CLIENT_ID,
@@ -81,6 +81,12 @@ export async function run(flags: string[]): Promise<void> {
 }
 
 function openUrl(url: string): void {
-  const cmd = platform() === 'darwin' ? 'open' : 'xdg-open';
-  exec(`${cmd} ${JSON.stringify(url)}`);
+  const os = platform();
+  if (os === 'darwin') {
+    execFile('open', [url]);
+  } else if (os === 'win32') {
+    execFile('cmd', ['/c', 'start', '', url]);
+  } else {
+    execFile('xdg-open', [url]);
+  }
 }

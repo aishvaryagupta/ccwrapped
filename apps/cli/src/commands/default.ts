@@ -93,8 +93,6 @@ function aggregate(days: DaySummary[]): DaySummary {
   let cacheCreationTokens = 0;
   let cacheReadTokens = 0;
   let costUSD = 0;
-  const sessions = new Set<string>();
-  const projects = new Set<string>();
 
   for (const day of days) {
     inputTokens += day.inputTokens;

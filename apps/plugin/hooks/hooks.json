@@ -8,6 +8,7 @@
           {
             "type": "command",
             "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/sync.js",
+            "async": true,
             "timeout": 30
           }
         ]
@@ -20,6 +21,7 @@
           {
             "type": "command",
             "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/sync.js",
+            "async": true,
             "timeout": 30
           }
         ]
@@ -32,6 +34,7 @@
           {
             "type": "command",
             "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/sync.js",
+            "async": true,
             "timeout": 30
           }
         ]

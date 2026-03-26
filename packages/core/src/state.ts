@@ -23,20 +23,28 @@ function defaultState(): DevwrappedState {
 }
 
 export function getConfigDir(configDir?: string): string {
-  const dir = configDir ?? join(homedir(), '.config', CONFIG_DIR_NAME);
+  return configDir ?? join(homedir(), '.config', CONFIG_DIR_NAME);
+}
+
+function ensureConfigDir(configDir?: string): string {
+  const dir = getConfigDir(configDir);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
   return dir;
 }
 
-function statePath(configDir?: string): string {
+function statePathForRead(configDir?: string): string {
   return join(getConfigDir(configDir), STATE_FILE_NAME);
+}
+
+function statePathForWrite(configDir?: string): string {
+  return join(ensureConfigDir(configDir), STATE_FILE_NAME);
 }
 
 export function readState(configDir?: string): DevwrappedState {
   try {
-    const file = statePath(configDir);
+    const file = statePathForRead(configDir);
     if (!existsSync(file)) return defaultState();
     const raw = readFileSync(file, 'utf-8');
     const parsed = JSON.parse(raw) as Partial<DevwrappedState>;
@@ -51,7 +59,7 @@ export function readState(configDir?: string): DevwrappedState {
 
 export function writeState(state: DevwrappedState, configDir?: string): boolean {
   try {
-    const file = statePath(configDir);
+    const file = statePathForWrite(configDir);
     const tmp = `${file}.tmp`;
     writeFileSync(tmp, JSON.stringify(state, null, 2), 'utf-8');
     chmodSync(tmp, 0o600);

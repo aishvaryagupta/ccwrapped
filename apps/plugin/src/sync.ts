@@ -62,4 +62,5 @@ async function main(): Promise<void> {
 }
 
 // Always exit 0 — never block Claude Code
-main().catch(() => {}).finally(() => process.exit(0));
+process.exitCode = 0;
+main().catch(() => {});

@@ -1,7 +1,6 @@
 import {
   API_BASE_URL,
   CLIENT_VERSION,
-  addSyncedSession,
   buildMachineId,
   buildSyncPayload,
   fetchSyncMetadata,
@@ -10,6 +9,7 @@ import {
   postSyncPayload,
   readState,
   scanAllFiles,
+  writeState,
 } from '@devwrapped/core';
 import { bold, dim, formatCost, formatTokens, green, red, yellow } from '../ui.js';
 
@@ -104,11 +104,17 @@ export async function run(flags: string[]): Promise<void> {
     return;
   }
 
-  // Mark all sessions as synced
+  // Mark all sessions as synced (batch write)
   const sessionIds = [...new Set(entries.map((e) => e.sessionId).filter(Boolean))] as string[];
+  const updatedState = readState();
+  const existing = new Set(updatedState.synced_sessions);
   for (const sid of sessionIds) {
-    addSyncedSession(sid);
+    if (!existing.has(sid)) {
+      updatedState.synced_sessions.push(sid);
+    }
   }
+  updatedState.last_sync = new Date().toISOString();
+  writeState(updatedState);
 
   console.log();
   console.log(green(`Synced ${filtered.days.length} day(s)`));
