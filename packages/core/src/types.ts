@@ -147,6 +147,7 @@ export type AuthResult =
   | { ok: false; error: 'expired' | 'denied' | 'network' | 'not_configured' };
 
 export interface GitHubUser {
+  id: number;
   login: string;
   avatar_url: string;
 }
