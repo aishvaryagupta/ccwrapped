@@ -19,7 +19,7 @@ Think of it as a **step counter for AI coding** — it counts how many "AI words
 Open Claude Code, type two commands, done forever:
 
 ```
-/plugin marketplace add ccwrapped-org/ccwrapped-plugin
+/plugin marketplace add aishvaryagupta/ccwrapped-plugin
 /plugin install ccwrapped@ccwrapped
 ```
 

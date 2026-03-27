@@ -12,7 +12,7 @@ Think **Spotify Wrapped meets WakaTime** — for Claude Code.
 
 ```bash
 # Inside Claude Code
-/plugin marketplace add ccwrapped-org/ccwrapped-plugin
+/plugin marketplace add aishvaryagupta/ccwrapped-plugin
 /plugin install ccwrapped
 ```
 

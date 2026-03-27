@@ -105,7 +105,7 @@ export default function LandingPage() {
           <p className="text-muted-foreground"># Inside Claude Code</p>
           <p className="text-foreground">
             <span className="text-primary" aria-hidden="true">$</span> /plugin marketplace add
-            ccwrapped-org/ccwrapped-plugin
+            aishvaryagupta/ccwrapped-plugin
           </p>
           <p className="text-foreground">
             <span className="text-primary" aria-hidden="true">$</span> /plugin install ccwrapped

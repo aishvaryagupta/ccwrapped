@@ -19,22 +19,11 @@
 
 ### You (manual steps)
 
-- [ ] **Register ccwrapped.dev domain**
-  - Namecheap, Cloudflare, or similar (~$12/yr)
-  - Point DNS to Vercel after deployment
+- [x] **Register ccwrapped.dev domain**
+- [x] **Deploy to Vercel** — live at ccwrapped.dev
 
-- [ ] **Deploy to Vercel**
-  - Import repo → set framework to Next.js
-  - Root directory: `apps/web`
-  - Set environment variables:
-    - `SUPABASE_URL` = `https://pogmpoepdoejxhcirxbl.supabase.co`
-    - `SUPABASE_SECRET_KEY` = (service role JWT from `.env.local`)
-    - `SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_lO-RhPUEzVGTAlOwJ-QZtQ_sgAazk7x`
-  - Assign custom domain: `ccwrapped.dev`
-
-- [ ] **Create GitHub org + plugin repo**
-  - Org: `ccwrapped-org` (or `ccwrapped`)
-  - Repo: `ccwrapped-org/ccwrapped-plugin` (public)
+- [ ] **Create plugin repo**
+  - Repo: `aishvaryagupta/ccwrapped-plugin` (public)
   - Push `apps/plugin/` contents there
 
 - [ ] **Publish CLI to npm**

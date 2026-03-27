@@ -12,7 +12,7 @@ A social stats tracker for Claude Code developers. A Claude Code plugin automati
 
 ```
 # Inside Claude Code — one-time setup, auto-syncs forever
-/plugin marketplace add ccwrapped-org/ccwrapped-plugin
+/plugin marketplace add aishvaryagupta/ccwrapped-plugin
 /plugin install ccwrapped@ccwrapped
 ```
 
@@ -328,7 +328,7 @@ Subscribe to multiple hooks for redundancy. The sync script is idempotent — mu
   "version": "0.1.0",
   "description": "Auto-sync your Claude Code usage stats to ccwrapped.dev",
   "homepage": "https://ccwrapped.dev",
-  "repository": "https://github.com/ccwrapped-org/ccwrapped-plugin"
+  "repository": "https://github.com/aishvaryagupta/ccwrapped-plugin"
 }
 ```
 

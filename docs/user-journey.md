@@ -219,7 +219,7 @@ There are three paths into ccwrapped. The first two require no CLI install at al
 │  Claude Code (terminal or IDE)                                      │
 │                                                                     │
 │  Step 1: Add marketplace (one-time)                                 │
-│  > /plugin marketplace add ccwrapped-org/ccwrapped-plugin               │
+│  > /plugin marketplace add aishvaryagupta/ccwrapped-plugin               │
 │                                                                     │
 │  ✓ Marketplace "ccwrapped" added.                                     │
 │                                                                     │
