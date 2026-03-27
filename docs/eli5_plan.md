@@ -1,4 +1,4 @@
-# devwrapped — ELI5 Plan
+# ccwrapped — ELI5 Plan
 
 ## What Is This?
 
@@ -19,8 +19,8 @@ Think of it as a **step counter for AI coding** — it counts how many "AI words
 Open Claude Code, type two commands, done forever:
 
 ```
-/plugin marketplace add devwrapped-org/devwrapped-plugin
-/plugin install devwrapped@devwrapped
+/plugin marketplace add ccwrapped-org/ccwrapped-plugin
+/plugin install ccwrapped@ccwrapped
 ```
 
 ### Every Day After (automatic, you do nothing)
@@ -29,21 +29,21 @@ Open Claude Code, type two commands, done forever:
 You use Claude Code normally
 You finish a conversation
 → In the background, a tiny script reads what tokens you used
-→ Sends daily totals to devwrapped.dev
+→ Sends daily totals to ccwrapped.dev
 → You never notice it happened
 ```
 
 ### When You Want to Flex
 
 ```
-Open devwrapped.dev/yourname → see your card → share it
+Open ccwrapped.dev/yourname → see your card → share it
 ```
 
 ---
 
 ## The User Journey
 
-### Step 1: You hear about devwrapped
+### Step 1: You hear about ccwrapped
 
 Someone on Twitter posts a beautiful card that says:
 "This week I generated 1.2M tokens across 8 projects"
@@ -51,15 +51,15 @@ You think: "I want one of those."
 
 ### Step 2: You install it
 
-Two commands inside Claude Code. That's it. Or if you prefer, you can run `npx devwrapped` in your terminal for a quick local preview first.
+Two commands inside Claude Code. That's it. Or if you prefer, you can run `npx ccwrapped` in your terminal for a quick local preview first.
 
 ### Step 3: It just works
 
-Every time you finish a Claude Code session, the plugin silently reads your usage and sends the daily totals (not your code, not your chats) to devwrapped.dev.
+Every time you finish a Claude Code session, the plugin silently reads your usage and sends the daily totals (not your code, not your chats) to ccwrapped.dev.
 
 ### Step 4: You get your card
 
-You open devwrapped.dev/yourname and see:
+You open ccwrapped.dev/yourname and see:
 - A GitHub-contributions-style heatmap of your Claude usage
 - A pie chart showing Opus vs Sonnet vs Haiku
 - A trend line of your tokens over time
@@ -75,7 +75,7 @@ You paste your profile URL on Twitter. Twitter auto-shows your card as a rich pr
 
 | Before (CLI-first plan) | After (plugin plan) |
 |---|---|
-| Run `npx devwrapped sync` every day | Automatic — you forget it exists |
+| Run `npx ccwrapped sync` every day | Automatic — you forget it exists |
 | Miss a day = missing data | Never misses (hooks fire every session) |
 | Feels like a chore | Feels like magic |
 
@@ -98,7 +98,7 @@ The sync is smart enough to not double-count.
 
 It's like setting three alarms instead of one. Redundancy = reliability.
 
-If hooks miss something (e.g. a crash), you can always run `npx devwrapped sync` to catch up manually. Belt and suspenders.
+If hooks miss something (e.g. a crash), you can always run `npx ccwrapped sync` to catch up manually. Belt and suspenders.
 
 ---
 
@@ -107,7 +107,7 @@ If hooks miss something (e.g. a crash), you can always run `npx devwrapped sync`
 For people who don't want to install anything yet:
 
 ```
-1. Visit devwrapped.dev
+1. Visit ccwrapped.dev
 2. Click "Preview My Stats"
 3. Browser asks: "Let this site read a folder?"
 4. You pick your Claude logs folder
@@ -149,7 +149,7 @@ This only works in Chrome/Edge/Arc, but that's fine for a demo.
                                ▼
                     ┌──────────────────────┐
                     │                      │
-                    │  Visit devwrapped.dev   │
+                    │  Visit ccwrapped.dev   │
                     │  or profile page     │
                     │                      │
                     └──────────┬───────────┘
@@ -206,7 +206,7 @@ This only works in Chrome/Edge/Arc, but that's fine for a demo.
                                │
                                ▼
                     ┌─────────────────────┐
-                    │  devwrapped.dev has     │
+                    │  ccwrapped.dev has     │
                     │  your fresh stats    │
                     └──────────┬──────────┘
                                │

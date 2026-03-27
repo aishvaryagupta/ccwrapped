@@ -1,7 +1,7 @@
 {
-  "name": "devwrapped",
-  "description": "Auto-sync your Claude Code usage stats to devwrapped.dev",
+  "name": "ccwrapped",
+  "description": "Auto-sync your Claude Code usage stats to ccwrapped.dev",
   "author": {
-    "name": "devwrapped"
+    "name": "ccwrapped"
   }
 }

@@ -122,11 +122,13 @@ export interface ScanOptions {
 // State management
 // ---------------------------------------------------------------------------
 
-export interface DevwrappedState {
+export interface CcwrappedState {
   synced_sessions: string[];
   last_sync: string | null;
   auth_token: string | null;
-  github_login: string | null;
+  refresh_token: string | null;
+  token_expiry: string | null;
+  username: string | null;
   machine_id: string;
 }
 
@@ -137,19 +139,20 @@ export interface DevwrappedState {
 export interface DeviceCodeResponse {
   device_code: string;
   user_code: string;
-  verification_uri: string;
+  verification_url: string;
   expires_in: number;
   interval: number;
 }
 
 export type AuthResult =
-  | { ok: true; token: string; login: string }
+  | { ok: true; token: string; refreshToken: string; expiresIn: number; email: string }
   | { ok: false; error: 'expired' | 'denied' | 'network' | 'not_configured' };
 
-export interface GitHubUser {
-  id: number;
-  login: string;
-  avatar_url: string;
+export interface GoogleUser {
+  id: string;
+  email: string;
+  name: string;
+  picture: string;
 }
 
 // ---------------------------------------------------------------------------

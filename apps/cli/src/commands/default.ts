@@ -1,16 +1,17 @@
 import {
   buildMachineId,
   buildSyncPayload,
+  fetchLivePricing,
   scanAllFiles,
   type DaySummary,
-} from '@devwrapped/core';
+} from '@ccwrapped/core';
 import { bold, dim, formatCost, formatTokens, printTable } from '../ui.js';
 
 export async function run(_flags: string[]): Promise<void> {
   const entries = await scanAllFiles();
 
   if (entries.length === 0) {
-    console.log(bold('devwrapped') + dim(' — Your Claude Code Stats'));
+    console.log(bold('ccwrapped') + dim(' — Your Claude Code Stats'));
     console.log();
     console.log('  No Claude Code usage data found.');
     console.log();
@@ -19,10 +20,18 @@ export async function run(_flags: string[]): Promise<void> {
     return;
   }
 
-  const payload = buildSyncPayload(entries, buildMachineId(), '0.1.0');
+  let livePricing;
+  try {
+    livePricing = await fetchLivePricing();
+    console.log(dim(`Loaded pricing for ${livePricing.size} models`));
+  } catch {
+    console.log(dim('Using offline pricing (could not fetch live data)'));
+  }
+
+  const payload = buildSyncPayload(entries, buildMachineId(), '0.1.0', livePricing);
   const days = payload.days;
 
-  console.log(bold('devwrapped') + dim(' — Your Claude Code Stats'));
+  console.log(bold('ccwrapped') + dim(' — Your Claude Code Stats'));
   console.log();
 
   // Today / this week / all time
@@ -47,9 +56,9 @@ export async function run(_flags: string[]): Promise<void> {
   }
 
   printTable(
-    ['Period', 'Tokens', 'Sessions', 'Projects', 'Cost'],
+    ['Period', 'Input', 'Output', 'Cache Create', 'Cache Read', 'Total', 'Cost'],
     summaryRows,
-    [14, 10, 10, 10, 8],
+    [14, 10, 10, 14, 14, 10, 8],
   );
 
   // Model breakdown
@@ -72,17 +81,19 @@ export async function run(_flags: string[]): Promise<void> {
   }
 
   console.log();
-  console.log(dim('Sync your stats: devwrapped sync'));
-  console.log(dim('Install the plugin for auto-sync: /plugin install devwrapped'));
+  console.log(dim('Sync your stats: ccwrapped sync'));
+  console.log(dim('Install the plugin for auto-sync: /plugin install ccwrapped'));
 }
 
 function makeSummaryRow(label: string, day: DaySummary): string[] {
-  const totalTokens = day.inputTokens + day.outputTokens;
+  const totalTokens = day.inputTokens + day.outputTokens + day.cacheCreationTokens + day.cacheReadTokens;
   return [
     label,
+    formatTokens(day.inputTokens),
+    formatTokens(day.outputTokens),
+    formatTokens(day.cacheCreationTokens),
+    formatTokens(day.cacheReadTokens),
     formatTokens(totalTokens),
-    String(day.sessionCount),
-    String(day.projectCount),
     formatCost(day.costUSD),
   ];
 }

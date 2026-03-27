@@ -1,32 +1,51 @@
+import * as readline from 'node:readline/promises';
 import {
   API_BASE_URL,
   CLIENT_VERSION,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
   buildMachineId,
   buildSyncPayload,
+  claimUsername,
   fetchSyncMetadata,
   filterDaysForSync,
-  getAuthToken,
+  getValidToken,
   postSyncPayload,
   readState,
   scanAllFiles,
+  setUsername,
+  validateUsername,
   writeState,
-} from '@devwrapped/core';
+} from '@ccwrapped/core';
 import { bold, dim, formatCost, formatTokens, green, red, yellow } from '../ui.js';
 
 export async function run(flags: string[]): Promise<void> {
   const minimal = flags.includes('--minimal');
 
-  // Check auth
-  const token = getAuthToken();
+  // Check auth (auto-refreshes expired tokens)
+  const token = await getValidToken(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
   if (!token) {
     console.log(red('Not authenticated.'));
-    console.log('Run "devwrapped auth" first.');
+    console.log('Run "ccwrapped auth" first.');
     process.exitCode = 1;
     return;
   }
 
-  console.log(bold('devwrapped sync'));
+  console.log(bold('ccwrapped sync'));
   console.log();
+
+  // Username picking on first sync
+  const state = readState();
+  if (!state.username) {
+    const claimed = await promptForUsername(token);
+    if (!claimed) {
+      process.exitCode = 1;
+      return;
+    }
+    setUsername(claimed);
+    console.log(green(`Username set: @${claimed}`));
+    console.log();
+  }
 
   // Scan all files
   console.log('Scanning Claude Code logs...');
@@ -38,7 +57,6 @@ export async function run(flags: string[]): Promise<void> {
   }
 
   // Build payload
-  const state = readState();
   const machineId = state.machine_id || buildMachineId();
   let payload = buildSyncPayload(entries, machineId, CLIENT_VERSION);
 
@@ -94,8 +112,8 @@ export async function run(flags: string[]): Promise<void> {
 
   if (!result.ok) {
     const messages: Record<string, string> = {
-      network: 'Could not reach devwrapped.dev. The API may not be available yet.',
-      auth: 'Authentication failed. Run "devwrapped auth" to re-authenticate.',
+      network: 'Could not reach ccwrapped.dev. The API may not be available yet.',
+      auth: 'Authentication failed. Run "ccwrapped auth" to re-authenticate.',
       server: 'Server error. Try again later.',
       validation: 'Invalid payload.',
     };
@@ -120,14 +138,55 @@ export async function run(flags: string[]): Promise<void> {
   console.log(green(`Synced ${filtered.days.length} day(s)`));
   console.log(`  ${formatTokens(totalTokens)} tokens  ${formatCost(totalCost)}`);
 
-  if (result.ok && result.data.profile_url) {
+  const currentState = readState();
+  if (currentState.username) {
     console.log();
-    console.log(`View your profile: ${result.data.profile_url}`);
-  } else {
-    const login = state.github_login;
-    if (login) {
-      console.log();
-      console.log(`View your profile: https://devwrapped.dev/@${login}`);
+    console.log(`View your profile: https://ccwrapped.dev/@${currentState.username}`);
+  }
+}
+
+async function promptForUsername(token: string): Promise<string | null> {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const MAX_ATTEMPTS = 3;
+
+  try {
+    console.log(bold('Pick a username for your profile'));
+    console.log(dim('3-30 characters, letters, numbers, and hyphens.'));
+    console.log();
+
+    let attempts = 0;
+    while (attempts < MAX_ATTEMPTS) {
+      let input: string;
+      try {
+        input = await rl.question('Username: ');
+      } catch {
+        return null;
+      }
+
+      if (!input.trim()) {
+        console.log(dim('Username cannot be empty.'));
+        continue;
+      }
+
+      attempts++;
+
+      const validation = validateUsername(input);
+      if (!validation.valid) {
+        console.log(red(validation.reason));
+        continue;
+      }
+
+      const result = await claimUsername(API_BASE_URL, token, validation.normalized);
+      if (result.ok) {
+        return result.data.username;
+      }
+
+      console.log(red(result.message ?? 'Could not claim username.'));
     }
+
+    console.log(red('Too many attempts. Run "ccwrapped sync" to try again.'));
+    return null;
+  } finally {
+    rl.close();
   }
 }

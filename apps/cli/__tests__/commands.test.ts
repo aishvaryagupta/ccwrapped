@@ -29,7 +29,7 @@ describe('ui helpers', () => {
 });
 
 describe('default command', () => {
-  const tempDir = join(tmpdir(), `devwrapped-cli-test-${Date.now()}`);
+  const tempDir = join(tmpdir(), `ccwrapped-cli-test-${Date.now()}`);
   const projectDir = join(tempDir, 'projects', 'test-project');
 
   beforeEach(() => {
@@ -56,7 +56,7 @@ describe('default command', () => {
       }),
     );
 
-    const { scanAllFiles, buildSyncPayload, buildMachineId } = await import('@devwrapped/core');
+    const { scanAllFiles, buildSyncPayload, buildMachineId } = await import('@ccwrapped/core');
     const entries = await scanAllFiles({ claudePaths: [tempDir] });
     expect(entries).toHaveLength(1);
 
@@ -67,24 +67,24 @@ describe('default command', () => {
 });
 
 describe('status command', () => {
-  const tempDir = join(tmpdir(), `devwrapped-status-test-${Date.now()}`);
+  const tempDir = join(tmpdir(), `ccwrapped-status-test-${Date.now()}`);
 
   afterEach(() => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
   it('readState returns defaults for missing config', async () => {
-    const { readState } = await import('@devwrapped/core');
+    const { readState } = await import('@ccwrapped/core');
     const state = readState(tempDir);
     expect(state.auth_token).toBeNull();
     expect(state.synced_sessions).toEqual([]);
   });
 
   it('readState reflects setAuthToken', async () => {
-    const { readState, setAuthToken } = await import('@devwrapped/core');
-    setAuthToken('gho_test', 'testuser', tempDir);
+    const { readState, setAuthToken } = await import('@ccwrapped/core');
+    setAuthToken('ya29_test', '1//refresh', 3600, tempDir);
     const state = readState(tempDir);
-    expect(state.auth_token).toBe('gho_test');
-    expect(state.github_login).toBe('testuser');
+    expect(state.auth_token).toBe('ya29_test');
+    expect(state.refresh_token).toBe('1//refresh');
   });
 });

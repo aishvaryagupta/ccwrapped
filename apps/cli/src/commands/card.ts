@@ -1,20 +1,20 @@
 import { spawn } from 'node:child_process';
 import { platform } from 'node:os';
-import { readState } from '@devwrapped/core';
+import { readState, getAuthToken } from '@ccwrapped/core';
 import { openUrl } from '../browser.js';
 import { green, red } from '../ui.js';
 
 export async function run(flags: string[]): Promise<void> {
   const state = readState();
 
-  if (!state.auth_token || !state.github_login) {
-    console.log(red('Not authenticated.'));
-    console.log('Run "devwrapped auth" first.');
+  if (!getAuthToken() || !state.username) {
+    console.log(red('No profile yet.'));
+    console.log('Run "ccwrapped auth" then "ccwrapped sync" to set up your profile.');
     process.exitCode = 1;
     return;
   }
 
-  const url = `https://devwrapped.dev/@${state.github_login}`;
+  const url = `https://ccwrapped.dev/@${state.username}`;
 
   if (flags.includes('--copy')) {
     copyToClipboard(url);

@@ -63,3 +63,39 @@ export async function fetchSyncMetadata(
     return { ok: false, error: 'network' };
   }
 }
+
+export async function claimUsername(
+  baseUrl: string,
+  token: string,
+  username: string,
+): Promise<HttpResult<{ username: string }>> {
+  try {
+    const res = await fetch(`${baseUrl}/username`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ username }),
+      signal: AbortSignal.timeout(HTTP_TIMEOUT_MS),
+    });
+
+    if (res.status === 401) {
+      return { ok: false, error: 'auth', message: 'Invalid or expired token' };
+    }
+
+    if (res.status === 409) {
+      return { ok: false, error: 'server', message: 'Username is already taken' };
+    }
+
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { message?: string };
+      return { ok: false, error: 'validation', message: body.message ?? `HTTP ${res.status}` };
+    }
+
+    const data = (await res.json()) as { username: string };
+    return { ok: true, data };
+  } catch {
+    return { ok: false, error: 'network', message: 'Could not reach server' };
+  }
+}

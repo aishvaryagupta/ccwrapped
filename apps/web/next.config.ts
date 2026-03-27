@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@devwrapped/core'],
+  transpilePackages: ['@ccwrapped/core'],
 };
 
 export default nextConfig;

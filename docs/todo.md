@@ -1,57 +1,47 @@
-# devwrapped — Setup TODO
+# ccwrapped — Launch TODO
 
-All items are manual tasks that require your browser/account access. ~30 minutes total.
+## Done
 
-## Blockers (Do These First)
+- [x] Google OAuth Device Flow (CLI + plugin)
+- [x] Token refresh (auto-refresh via `getValidToken`)
+- [x] Username system (validate, claim, prompt on first sync)
+- [x] Supabase schema + migration (001 + 002)
+- [x] Web API routes (sync, username claim, username check, OG card)
+- [x] CLI commands (auth, sync, card, status, default)
+- [x] Plugin auto-sync with token refresh
+- [x] RLS policies + rate limiting
+- [x] Tests (103 passing, all packages typecheck)
+- [x] Vercel config (`vercel.json`)
+- [x] Google Cloud project + OAuth client created
+- [x] Supabase project created + linked (`pogmpoepdoejxhcirxbl`)
 
-- [ ] **B2: Register devwrapped.dev domain** (~$12/yr)
-  - Namecheap, Cloudflare, or Google Domains
-  - Point DNS to Vercel once web app is deployed (later)
-  - Confirm: devwrapped.dev is available as of 2026-03-26
+## Remaining
 
-- [ ] **B3: Create GitHub OAuth App**
-  - Go to: https://github.com/settings/developers
-  - Click "New OAuth App"
-  - Application name: `devwrapped`
-  - Homepage URL: `https://devwrapped.dev`
-  - Callback URL: `https://devwrapped.dev/api/auth/callback` (placeholder — Device Flow doesn't use it)
-  - **Check "Enable Device Flow"** (critical, off by default)
-  - Save the **Client ID** (no client secret needed for Device Flow)
-  - Share Client ID with me so I can wire it into the auth code
+### You (manual steps)
 
-- [ ] **B4: Create Supabase project**
-  - Go to: https://supabase.com
-  - Create org → New project → name: `devwrapped`
-  - Pick region closest to your users (e.g., us-east-1)
-  - Set a strong database password (save it somewhere safe)
-  - After provisioning (~2 min), grab:
-    - Project URL: `https://xxxxx.supabase.co`
-    - Anon key: `eyJhbGci...`
-    - Service role key: `eyJhbGci...` (keep secret, server-side only)
-  - **Start on free tier** — works for dev and launch
-    - Free tier auto-pauses after 7 days of inactivity
-    - I'll set up a GitHub Actions keep-alive cron to prevent this
-    - Upgrade to Pro ($25/mo) later when you need backups or hit limits
+- [ ] **Register ccwrapped.dev domain**
+  - Namecheap, Cloudflare, or similar (~$12/yr)
+  - Point DNS to Vercel after deployment
 
-- [ ] **B5: Create GitHub org + plugin marketplace repo**
-  - Create org: https://github.com/organizations/plan
-    - Org name: `devwrapped-org` (or just `devwrapped` if available)
-  - Create repo: `devwrapped-org/devwrapped-plugin`
-    - Public repo
-    - This will serve as the plugin marketplace source
-    - I'll populate it with the plugin code in Phase 2
+- [ ] **Deploy to Vercel**
+  - Import repo → set framework to Next.js
+  - Root directory: `apps/web`
+  - Set environment variables:
+    - `SUPABASE_URL` = `https://pogmpoepdoejxhcirxbl.supabase.co`
+    - `SUPABASE_SECRET_KEY` = (service role JWT from `.env.local`)
+    - `SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_lO-RhPUEzVGTAlOwJ-QZtQ_sgAazk7x`
+  - Assign custom domain: `ccwrapped.dev`
 
-## After Blockers Are Done
+- [ ] **Create GitHub org + plugin repo**
+  - Org: `ccwrapped-org` (or `ccwrapped`)
+  - Repo: `ccwrapped-org/ccwrapped-plugin` (public)
+  - Push `apps/plugin/` contents there
 
-- [ ] **Share credentials with me** (so I can wire them into code)
-  - GitHub OAuth Client ID
-  - Supabase Project URL
-  - Supabase Anon Key
-  - (Keep service role key, database password, and any secrets to yourself — I'll tell you where to put them in `.env`)
+- [ ] **Publish CLI to npm**
+  - `cd apps/cli && npm publish`
+  - Package name: `ccwrapped`
 
-- [ ] **Then say "go"** — I'll start building Phase 1:
-  - Turborepo monorepo setup
-  - Fork JSONL parser into packages/core
-  - Payload types + builder
-  - Unit tests
-  - CI pipeline
+### Code (can be done by Claude)
+
+- [ ] **Complete plugin.json** — add required fields per Claude Code plugin spec
+- [ ] **Google OAuth consent screen** — publish app (currently in testing mode, limited to 100 users)

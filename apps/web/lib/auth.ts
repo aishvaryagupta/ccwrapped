@@ -2,8 +2,9 @@ import { getSupabaseAdmin } from './supabase';
 
 export interface AuthenticatedUser {
   userId: string;
-  githubId: number;
-  githubLogin: string;
+  googleId: string;
+  username: string | null;
+  email: string;
   avatarUrl: string;
 }
 
@@ -23,10 +24,10 @@ export async function verifyAndUpsertUser(
     return { ok: false, status: 401, message: 'Empty token' };
   }
 
-  // Verify token with GitHub
-  let githubUser: { id: number; login: string; avatar_url: string };
+  // Verify token with Google
+  let googleUser: { id: string; email: string; name: string; picture: string };
   try {
-    const res = await fetch('https://api.github.com/user', {
+    const res = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
@@ -35,12 +36,12 @@ export async function verifyAndUpsertUser(
     });
 
     if (!res.ok) {
-      return { ok: false, status: 401, message: 'Invalid or expired GitHub token' };
+      return { ok: false, status: 401, message: 'Invalid or expired Google token' };
     }
 
-    githubUser = (await res.json()) as typeof githubUser;
+    googleUser = (await res.json()) as typeof googleUser;
   } catch {
-    return { ok: false, status: 401, message: 'Failed to verify token with GitHub' };
+    return { ok: false, status: 401, message: 'Failed to verify token with Google' };
   }
 
   // Upsert user
@@ -48,13 +49,14 @@ export async function verifyAndUpsertUser(
     .from('users')
     .upsert(
       {
-        github_id: githubUser.id,
-        github_login: githubUser.login,
-        avatar_url: githubUser.avatar_url,
+        google_id: googleUser.id,
+        email: googleUser.email,
+        display_name: googleUser.name,
+        avatar_url: googleUser.picture,
       },
-      { onConflict: 'github_id' },
+      { onConflict: 'google_id' },
     )
-    .select('id')
+    .select('id, username')
     .single();
 
   if (error || !data) {
@@ -65,9 +67,10 @@ export async function verifyAndUpsertUser(
     ok: true,
     user: {
       userId: data.id,
-      githubId: githubUser.id,
-      githubLogin: githubUser.login,
-      avatarUrl: githubUser.avatar_url,
+      googleId: googleUser.id,
+      username: data.username,
+      email: googleUser.email,
+      avatarUrl: googleUser.picture,
     },
   };
 }

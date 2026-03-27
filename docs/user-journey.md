@@ -1,8 +1,8 @@
-# devwrapped — User Journey
+# ccwrapped — User Journey
 
 ## Overview
 
-There are four entry points into devwrapped. Every path leads to the same viral loop: **see stats → share card → others discover → install → repeat.**
+There are four entry points into ccwrapped. Every path leads to the same viral loop: **see stats → share card → others discover → install → repeat.**
 
 ### Install Paths (Ranked by Friction)
 
@@ -10,7 +10,7 @@ There are four entry points into devwrapped. Every path leads to the same viral 
 |---|---|---|---|
 | **Web preview** (File System Access API) | Zero install | Click → pick folder → see stats | Curious browsers (Chrome only) |
 | **Plugin** (primary) | One-time, 2 commands | `/plugin marketplace add` → `/plugin install` | All Claude Code users |
-| **CLI** (fallback) | Per-use | `npx devwrapped sync` | Terminal lovers, plugin-averse, backfill |
+| **CLI** (fallback) | Per-use | `npx ccwrapped sync` | Terminal lovers, plugin-averse, backfill |
 
 ---
 
@@ -35,19 +35,19 @@ There are four entry points into devwrapped. Every path leads to the same viral 
 │  │  │                                   │    │                      │
 │  │  │  ▓▓▓▓░░▓▓▓▓▓░▓▓▓▓▓▓▓░░░░         │    │                      │
 │  │  │                                   │    │                      │
-│  │  │  devwrapped.dev/devuser              │    │                      │
+│  │  │  ccwrapped.dev/devuser              │    │                      │
 │  │  └───────────────────────────────────┘    │                      │
 │  └───────────────────────────────────────────┘                      │
 │                                                                     │
 │  User thinks: "I want one of those."                                │
-│  Clicks the card → lands on devwrapped.dev/devuser                     │
+│  Clicks the card → lands on ccwrapped.dev/devuser                     │
 │                                                                     │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│  devwrapped.dev/devuser (Public Profile)                               │
+│  ccwrapped.dev/devuser (Public Profile)                               │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐    │
 │  │  👤 devuser                                                 │    │
@@ -63,9 +63,9 @@ There are four entry points into devwrapped. Every path leads to the same viral 
 │  │                                                             │    │
 │  │  ┌──────────────────────────────────────────────┐           │    │
 │  │  │  Want your own stats?                        │           │    │
-│  │  │  /plugin install devwrapped   (auto-sync)       │           │    │
+│  │  │  /plugin install ccwrapped   (auto-sync)       │           │    │
 │  │  │  — or —                                      │           │    │
-│  │  │  $ npx devwrapped             (one-time view)   │           │    │
+│  │  │  $ npx ccwrapped             (one-time view)   │           │    │
 │  │  └──────────────────────────────────────────────┘           │    │
 │  └─────────────────────────────────────────────────────────────┘    │
 │                                                                     │
@@ -86,9 +86,9 @@ There are four entry points into devwrapped. Every path leads to the same viral 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│  User already runs ccusage daily. Sees devwrapped on:                  │
-│  - ccusage GitHub README ("Also check out devwrapped")                 │
-│  - npm weekly email ("trending: devwrapped")                           │
+│  User already runs ccusage daily. Sees ccwrapped on:                  │
+│  - ccusage GitHub README ("Also check out ccwrapped")                 │
+│  - npm weekly email ("trending: ccwrapped")                           │
 │  - Hacker News / r/ClaudeAI launch post                             │
 │                                                                     │
 │  User thinks: "Finally, a visual layer for my usage data."          │
@@ -108,16 +108,16 @@ There are four entry points into devwrapped. Every path leads to the same viral 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│  Hacker News: "Show HN: devwrapped — Spotify Wrapped for Claude Code" │
+│  Hacker News: "Show HN: ccwrapped — Spotify Wrapped for Claude Code" │
 │                                                                     │
-│  User clicks → lands on devwrapped.dev (landing page)                  │
+│  User clicks → lands on ccwrapped.dev (landing page)                  │
 │                                                                     │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│  devwrapped.dev (Landing Page)                                         │
+│  ccwrapped.dev (Landing Page)                                         │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐    │
 │  │                                                             │    │
@@ -131,7 +131,7 @@ There are four entry points into devwrapped. Every path leads to the same viral 
 │  │                                                             │    │
 │  │   Set up once. Auto-syncs forever.                          │    │
 │  │                                                             │    │
-│  │   /plugin install devwrapped                                   │    │
+│  │   /plugin install ccwrapped                                   │    │
 │  │                                                             │    │
 │  │   ─────────────────────────────────────────                 │    │
 │  │                                                             │    │
@@ -157,21 +157,21 @@ There are four entry points into devwrapped. Every path leads to the same viral 
 
 ## Install Flow (All Journeys Converge Here)
 
-There are three paths into devwrapped. The first two require no CLI install at all.
+There are three paths into ccwrapped. The first two require no CLI install at all.
 
 ### Path A: Zero-Install Web Preview (Chrome Only)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│  Browser: devwrapped.dev                                               │
+│  Browser: ccwrapped.dev                                               │
 │                                                                     │
 │  User clicks [Preview My Stats] on landing page                     │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐    │
 │  │                                                             │    │
 │  │  Browser dialog:                                            │    │
-│  │  "devwrapped.dev wants to read files from a folder"            │    │
+│  │  "ccwrapped.dev wants to read files from a folder"            │    │
 │  │                                                             │    │
 │  │  User navigates to:                                         │    │
 │  │  ~/.config/claude/projects/                                 │    │
@@ -195,7 +195,7 @@ There are three paths into devwrapped. The first two require no CLI install at a
 │  │                                                             │    │
 │  │  ─────────────────────────────────────────                  │    │
 │  │  Want to share this + auto-sync daily?                      │    │
-│  │  Install the plugin: /plugin install devwrapped                │    │
+│  │  Install the plugin: /plugin install ccwrapped                │    │
 │  │  ─────────────────────────────────────────                  │    │
 │  │                                                             │    │
 │  └─────────────────────────────────────────────────────────────┘    │
@@ -219,28 +219,28 @@ There are three paths into devwrapped. The first two require no CLI install at a
 │  Claude Code (terminal or IDE)                                      │
 │                                                                     │
 │  Step 1: Add marketplace (one-time)                                 │
-│  > /plugin marketplace add devwrapped-org/devwrapped-plugin               │
+│  > /plugin marketplace add ccwrapped-org/ccwrapped-plugin               │
 │                                                                     │
-│  ✓ Marketplace "devwrapped" added.                                     │
+│  ✓ Marketplace "ccwrapped" added.                                     │
 │                                                                     │
 │  Step 2: Install plugin (one-time)                                  │
-│  > /plugin install devwrapped@devwrapped                                  │
+│  > /plugin install ccwrapped@ccwrapped                                  │
 │                                                                     │
-│  ✓ Plugin "devwrapped" installed.                                      │
+│  ✓ Plugin "ccwrapped" installed.                                      │
 │    Auto-sync enabled for all future sessions.                       │
-│    Run "npx devwrapped auth" to connect your GitHub account.           │
+│    Run "npx ccwrapped auth" to connect your GitHub account.           │
 │                                                                     │
 │  ─────────────────────────────────────────────────────────────      │
 │                                                                     │
 │  Step 3: Authenticate (one-time)                                    │
-│  $ npx devwrapped auth                                                 │
+│  $ npx ccwrapped auth                                                 │
 │                                                                     │
 │  ! Copy your one-time code: AB12-CD34                               │
 │  Press Enter to open github.com in your browser...                  │
 │                                                                     │
 │  → Browser opens to github.com/login/device                         │
 │  → User pastes code AB12-CD34                                       │
-│  → User clicks "Authorize devwrapped"                                  │
+│  → User clicks "Authorize ccwrapped"                                  │
 │                                                                     │
 │  ✓ Authentication complete. Welcome, @username!                     │
 │                                                                     │
@@ -251,7 +251,7 @@ There are three paths into devwrapped. The first two require no CLI install at a
 │    └─ 2026-03-25  · 245K tokens   ·  6 sessions                    │
 │  ✓ 14 days synced.                                                  │
 │                                                                     │
-│  Your profile: https://devwrapped.dev/username                         │
+│  Your profile: https://ccwrapped.dev/username                         │
 │  Open in browser? [Y/n]                                             │
 │                                                                     │
 │  ─────────────────────────────────────────────────────────────      │
@@ -272,7 +272,7 @@ There are three paths into devwrapped. The first two require no CLI install at a
 │                                                                     │
 │  Terminal                                                           │
 │                                                                     │
-│  $ npx devwrapped                                                      │
+│  $ npx ccwrapped                                                      │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐    │
 │  │                                                             │    │
@@ -286,13 +286,13 @@ There are three paths into devwrapped. The first two require no CLI install at a
 │  │                                                             │    │
 │  │  ─────────────────────────────────────────                  │    │
 │  │  Want auto-sync? Install the plugin:                        │    │
-│  │  /plugin install devwrapped                                    │    │
+│  │  /plugin install ccwrapped                                    │    │
 │  │                                                             │    │
-│  │  Or sync manually: devwrapped sync                             │    │
+│  │  Or sync manually: ccwrapped sync                             │    │
 │  │                                                             │    │
 │  └─────────────────────────────────────────────────────────────┘    │
 │                                                                     │
-│  $ devwrapped sync                                                     │
+│  $ ccwrapped sync                                                     │
 │  → Auth flow (same GitHub Device Flow as plugin path)               │
 │  → Uploads 14 days of data                                          │
 │  → Opens profile in browser                                         │
@@ -311,7 +311,7 @@ There are three paths into devwrapped. The first two require no CLI install at a
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│  Browser: devwrapped.dev/username                                      │
+│  Browser: ccwrapped.dev/username                                      │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐    │
 │  │                                                             │    │
@@ -368,10 +368,10 @@ There are three paths into devwrapped. The first two require no CLI install at a
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│  User pastes devwrapped.dev/username on Twitter                        │
+│  User pastes ccwrapped.dev/username on Twitter                        │
 │                                                                     │
 │  Twitter fetches OG image from:                                     │
-│  GET devwrapped.dev/api/card/username.png                              │
+│  GET ccwrapped.dev/api/card/username.png                              │
 │                                                                     │
 │  Tweet renders as:                                                  │
 │  ┌───────────────────────────────────────────┐                      │
@@ -391,7 +391,7 @@ There are three paths into devwrapped. The first two require no CLI install at a
 │  │  │                                   │    │                      │
 │  │  │  ▓▓░▓▓▓░▓▓▓▓▓░▓▓▓▓░▓▓▓▓▓▓░      │    │                      │
 │  │  │                                   │    │                      │
-│  │  │  devwrapped.dev                      │    │                      │
+│  │  │  ccwrapped.dev                      │    │                      │
 │  │  └───────────────────────────────────┘    │                      │
 │  └───────────────────────────────────────────┘                      │
 │                                                                     │
@@ -415,10 +415,10 @@ There are three paths into devwrapped. The first two require no CLI install at a
 │  Behind the scenes (user doesn't see this):                         │
 │  ├─ SessionEnd/Stop hook fires                                      │
 │  ├─ sync.js parses transcript → aggregates tokens                   │
-│  ├─ POSTs daily summary to devwrapped.dev/api/sync                     │
+│  ├─ POSTs daily summary to ccwrapped.dev/api/sync                     │
 │  └─ Records session_id in local state (idempotent)                  │
 │                                                                     │
-│  User's profile at devwrapped.dev/username is always up-to-date.       │
+│  User's profile at ccwrapped.dev/username is always up-to-date.       │
 │  Card image refreshes automatically.                                │
 │                                                                     │
 │  The user does NOTHING. Data just appears.                          │
@@ -431,7 +431,7 @@ There are three paths into devwrapped. The first two require no CLI install at a
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│  User opens devwrapped.dev/username whenever they feel like it         │
+│  User opens ccwrapped.dev/username whenever they feel like it         │
 │                                                                     │
 │  Their data is already there because plugin synced after each       │
 │  session. No manual step needed.                                    │
@@ -450,7 +450,7 @@ There are three paths into devwrapped. The first two require no CLI install at a
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│  $ devwrapped sync                                                     │
+│  $ ccwrapped sync                                                     │
 │                                                                     │
 │  Syncing 1 new day...                                               │
 │  ✓ 2026-03-26 · 312K tokens · 14 sessions · 4 projects             │
@@ -458,9 +458,9 @@ There are three paths into devwrapped. The first two require no CLI install at a
 │  This week: 1.4M tokens (↑ 27% from last week)                     │
 │  Leaderboard: #39 weekly (↑ 8 spots)                                │
 │                                                                     │
-│  View: https://devwrapped.dev/username                                 │
+│  View: https://ccwrapped.dev/username                                 │
 │                                                                     │
-│  Tip: Install the plugin for auto-sync: /plugin install devwrapped     │
+│  Tip: Install the plugin for auto-sync: /plugin install ccwrapped     │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -470,11 +470,11 @@ There are three paths into devwrapped. The first two require no CLI install at a
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│  Every Monday, the card at devwrapped.dev/api/card/username.png        │
+│  Every Monday, the card at ccwrapped.dev/api/card/username.png        │
 │  automatically reflects last week's data.                           │
 │                                                                     │
 │  Plugin users: Card is always fresh. Just open and share.           │
-│  CLI users: Run "devwrapped sync" first, then share.                   │
+│  CLI users: Run "ccwrapped sync" first, then share.                   │
 │                                                                     │
 │  User's habit:                                                      │
 │  Monday morning → open profile → screenshot card → post on Twitter  │
@@ -492,7 +492,7 @@ There are three paths into devwrapped. The first two require no CLI install at a
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│  Browser: devwrapped.dev/leaderboard                                   │
+│  Browser: ccwrapped.dev/leaderboard                                   │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐    │
 │  │                                                             │    │
@@ -512,7 +512,7 @@ There are three paths into devwrapped. The first two require no CLI install at a
 │  │                                                             │    │
 │  │  248 developers ranked this week                            │    │
 │  │                                                             │    │
-│  │  Not on the board? /plugin install devwrapped                   │    │
+│  │  Not on the board? /plugin install ccwrapped                   │    │
 │  │                                                             │    │
 │  └─────────────────────────────────────────────────────────────┘    │
 │                                                                     │
@@ -530,7 +530,7 @@ There are three paths into devwrapped. The first two require no CLI install at a
 ### No Claude Code Logs Found
 
 ```
-$ npx devwrapped
+$ npx ccwrapped
 
   ⚠ No Claude Code usage logs found.
 
@@ -542,13 +542,13 @@ $ npx devwrapped
   when you use Claude Code in any project.
 
   If your logs are in a custom location, set:
-    CLAUDE_CONFIG_DIR=/path/to/logs devwrapped
+    CLAUDE_CONFIG_DIR=/path/to/logs ccwrapped
 ```
 
 ### No Usage Data in Date Range
 
 ```
-$ npx devwrapped
+$ npx ccwrapped
 
   📊 Your Claude Code Stats
 
@@ -556,13 +556,13 @@ $ npx devwrapped
 
   Last activity: 2026-02-14 (40 days ago)
 
-  Tip: Start using Claude Code and run devwrapped again!
+  Tip: Start using Claude Code and run ccwrapped again!
 ```
 
 ### Sync Conflict (Multi-Machine)
 
 ```
-$ devwrapped sync
+$ ccwrapped sync
 
   ⚠ Conflict detected for 2 days:
 
@@ -583,19 +583,19 @@ $ devwrapped sync
 ### Network Error During Sync
 
 ```
-$ devwrapped sync
+$ ccwrapped sync
 
   Syncing usage data...
-  ✗ Failed to reach devwrapped.dev (network error)
+  ✗ Failed to reach ccwrapped.dev (network error)
 
   Your local stats are unaffected.
-  Try again later: devwrapped sync
+  Try again later: ccwrapped sync
 ```
 
 ### Auth Token Expired
 
 ```
-$ devwrapped sync
+$ ccwrapped sync
 
   ⚠ Your GitHub session has expired.
   Let's re-authenticate.
@@ -609,16 +609,16 @@ $ devwrapped sync
 ```
   (After a Claude Code session ends, user sees in stderr:)
 
-  devwrapped: Not authenticated yet. Your stats are not being synced.
-  Run "npx devwrapped auth" to connect your GitHub account.
+  ccwrapped: Not authenticated yet. Your stats are not being synced.
+  Run "npx ccwrapped auth" to connect your GitHub account.
 ```
 
 ### Plugin Sync Failed Silently
 
 ```
-  (User notices stale data on devwrapped.dev/username)
+  (User notices stale data on ccwrapped.dev/username)
 
-  $ devwrapped status
+  $ ccwrapped status
 
   Plugin: installed ✓
   Auth: authenticated as @username ✓
@@ -627,7 +627,7 @@ $ devwrapped sync
 
   Looks like recent syncs failed. Running manual backfill...
 
-  $ devwrapped sync
+  $ ccwrapped sync
   ✓ 2 days backfilled. Profile is up to date.
 ```
 
@@ -641,8 +641,8 @@ $ devwrapped sync
   │  Browser preview requires Chrome, Edge, or Arc.             │
   │                                                             │
   │  Alternatively:                                             │
-  │  • Install the plugin: /plugin install devwrapped              │
-  │  • Or run in terminal: npx devwrapped                          │
+  │  • Install the plugin: /plugin install ccwrapped              │
+  │  • Or run in terminal: npx ccwrapped                          │
   │                                                             │
   └─────────────────────────────────────────────────────────────┘
 ```
@@ -662,7 +662,7 @@ $ devwrapped sync
                                ▼
                     ┌──────────────────────┐
                     │                      │
-                    │  Visit devwrapped.dev   │
+                    │  Visit ccwrapped.dev   │
                     │  or profile page     │
                     │                      │
                     └──────────┬───────────┘

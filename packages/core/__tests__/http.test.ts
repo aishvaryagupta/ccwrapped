@@ -21,7 +21,7 @@ describe('postSyncPayload', () => {
   it('sends correct request and returns data on success', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      new Response(JSON.stringify({ profile_url: 'https://devwrapped.dev/@user' }), {
+      new Response(JSON.stringify({ profile_url: 'https://ccwrapped.dev/@user' }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       }),
@@ -39,7 +39,7 @@ describe('postSyncPayload', () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.profile_url).toBe('https://devwrapped.dev/@user');
+      expect(result.data.profile_url).toBe('https://ccwrapped.dev/@user');
     }
   });
 

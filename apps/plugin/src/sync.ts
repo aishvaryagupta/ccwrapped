@@ -1,16 +1,18 @@
 import {
   API_BASE_URL,
   CLIENT_VERSION,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
   addSyncedSession,
   buildMachineId,
   buildSyncPayload,
   filterDaysForSync,
-  getAuthToken,
+  getValidToken,
   isSessionSynced,
   parseTranscriptFile,
   postSyncPayload,
   readState,
-} from '@devwrapped/core';
+} from '@ccwrapped/core';
 
 async function main(): Promise<void> {
   // Read hook input from stdin
@@ -33,11 +35,11 @@ async function main(): Promise<void> {
   // Idempotency: skip if already synced
   if (isSessionSynced(sessionId)) return;
 
-  // Check auth
-  const token = getAuthToken();
+  // Check auth (auto-refreshes expired tokens)
+  const token = await getValidToken(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
   if (!token) {
     process.stderr.write(
-      'devwrapped: Run "npx devwrapped auth" to connect your GitHub account.\n',
+      'ccwrapped: Run "npx ccwrapped auth" to connect your Google account.\n',
     );
     return;
   }

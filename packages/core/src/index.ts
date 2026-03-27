@@ -4,7 +4,11 @@ export {
   CLIENT_VERSION,
   DEFAULT_CONFIG_PATHS,
   DEFAULT_PRICING,
-  GITHUB_CLIENT_ID,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  USERNAME_PATTERN,
   MAX_BACKFILL_DAYS,
   MAX_COST_USD_PER_DAY,
   MAX_TOTAL_TOKENS_PER_DAY,
@@ -20,8 +24,8 @@ export type {
   DailyDate,
   DaySummary,
   DeviceCodeResponse,
-  DevwrappedState,
-  GitHubUser,
+  CcwrappedState,
+  GoogleUser,
   HookInput,
   HttpResult,
   ModelBreakdown,
@@ -66,14 +70,28 @@ export {
   clearState,
   getAuthToken,
   getConfigDir,
+  getValidToken,
   isSessionSynced,
   readState,
   setAuthToken,
+  setUsername,
   writeState,
 } from './state.js';
 
 // HTTP
-export { fetchSyncMetadata, postSyncPayload } from './http.js';
+export { claimUsername, fetchSyncMetadata, postSyncPayload } from './http.js';
 
 // Auth
-export { fetchGitHubUser, pollForToken, startDeviceFlow } from './auth.js';
+export {
+  fetchGoogleUser,
+  pollForToken,
+  refreshAccessToken,
+  startDeviceFlow,
+} from './auth.js';
+
+// Username
+export { validateUsername } from './username.js';
+
+// Pricing
+export { calculateLiveCost, fetchLivePricing, resetPricingCache } from './pricing.js';
+export type { LiveModelPricing } from './pricing.js';

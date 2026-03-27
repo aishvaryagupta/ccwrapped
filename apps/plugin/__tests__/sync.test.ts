@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock core modules before importing sync
-const tempDir = join(tmpdir(), `devwrapped-plugin-test-${Date.now()}`);
+const tempDir = join(tmpdir(), `ccwrapped-plugin-test-${Date.now()}`);
 
 // We test the sync logic by importing core functions directly and
 // verifying they would be called correctly. The actual sync.ts
@@ -20,7 +20,7 @@ import {
   parseTranscriptFile,
   readState,
   writeState,
-} from '@devwrapped/core';
+} from '@ccwrapped/core';
 
 describe('plugin sync logic', () => {
   const fixtureDir = join(tempDir, 'projects', 'test-project');

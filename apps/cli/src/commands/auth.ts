@@ -1,12 +1,13 @@
 import {
-  GITHUB_CLIENT_ID,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
   clearState,
-  getAuthToken,
-  pollForToken,
+  getValidToken,
   readState,
+  pollForToken,
   setAuthToken,
   startDeviceFlow,
-} from '@devwrapped/core';
+} from '@ccwrapped/core';
 import { openUrl } from '../browser.js';
 import { bold, green, red, yellow } from '../ui.js';
 
@@ -17,28 +18,28 @@ export async function run(flags: string[]): Promise<void> {
     return;
   }
 
-  // Check if already authenticated
-  const token = getAuthToken();
-  if (token) {
+  // Check if already authenticated (validates token, refreshes if needed)
+  const existingToken = await getValidToken(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
+  if (existingToken) {
     const state = readState();
-    console.log(green(`Already authenticated as @${state.github_login ?? 'unknown'}.`));
+    console.log(green(`Already authenticated${state.username ? ` as @${state.username}` : ''}.`));
     console.log('Use --logout to reset.');
     return;
   }
 
   // Check if client ID is configured
-  if (!GITHUB_CLIENT_ID) {
+  if (!GOOGLE_CLIENT_ID) {
     console.log(yellow('Authentication is not yet configured.'));
-    console.log('A GitHub OAuth App needs to be created first.');
+    console.log('A Google OAuth App needs to be created first.');
     console.log('See docs/todo.md for setup instructions.');
     return;
   }
 
   // Start Device Flow
-  console.log(bold('devwrapped auth'));
+  console.log(bold('ccwrapped auth'));
   console.log();
 
-  const deviceCode = await startDeviceFlow(GITHUB_CLIENT_ID);
+  const deviceCode = await startDeviceFlow(GOOGLE_CLIENT_ID);
   if (!deviceCode) {
     console.log(red('Failed to start authentication. Check your network.'));
     process.exitCode = 1;
@@ -47,22 +48,23 @@ export async function run(flags: string[]): Promise<void> {
 
   console.log(`! First, copy your one-time code: ${bold(deviceCode.user_code)}`);
   console.log();
-  console.log(`Opening ${deviceCode.verification_uri} ...`);
+  console.log(`Opening ${deviceCode.verification_url} ...`);
 
-  openUrl(deviceCode.verification_uri);
+  openUrl(deviceCode.verification_url);
 
   console.log();
   console.log('Waiting for authorization...');
 
   const result = await pollForToken(
-    GITHUB_CLIENT_ID,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
     deviceCode.device_code,
     deviceCode.interval,
   );
 
   if (!result.ok) {
     const messages: Record<string, string> = {
-      expired: 'Code expired. Run "devwrapped auth" again.',
+      expired: 'Code expired. Run "ccwrapped auth" again.',
       denied: 'Authorization denied.',
       network: 'Network error during authorization.',
       not_configured: 'Auth not configured.',
@@ -72,8 +74,8 @@ export async function run(flags: string[]): Promise<void> {
     return;
   }
 
-  setAuthToken(result.token, result.login);
+  setAuthToken(result.token, result.refreshToken, result.expiresIn);
   console.log();
-  console.log(green(`Authentication complete. Welcome, @${result.login}!`));
-  console.log('Your stats will auto-sync from now on.');
+  console.log(green(`Authentication complete. Welcome, ${result.email}!`));
+  console.log('Run "ccwrapped sync" to pick a username and upload your stats.');
 }

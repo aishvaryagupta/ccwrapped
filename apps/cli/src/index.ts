@@ -38,7 +38,7 @@ try {
       break;
     case '--version':
     case '-v':
-      console.log('devwrapped 0.1.0');
+      console.log('ccwrapped 0.1.0');
       break;
     default:
       console.error(`Unknown command: ${command}`);
@@ -61,15 +61,15 @@ try {
 }
 
 function printHelp() {
-  console.log('devwrapped — Your Claude Code stats, visualized and shared.');
+  console.log('ccwrapped — Your Claude Code stats, visualized and shared.');
   console.log();
-  console.log('Usage: devwrapped [command] [options]');
+  console.log('Usage: ccwrapped [command] [options]');
   console.log();
   console.log('Commands:');
   console.log('  (default)    Show local usage summary');
-  console.log('  auth         Authenticate with GitHub');
+  console.log('  auth         Authenticate with Google');
   console.log('  auth --logout   Remove stored credentials');
-  console.log('  sync         Sync stats to devwrapped.dev');
+  console.log('  sync         Sync stats to ccwrapped.dev');
   console.log('  sync --minimal  Upload tokens only (no model/session data)');
   console.log('  card         Open your profile in browser');
   console.log('  card --copy     Copy profile URL to clipboard');
@@ -77,10 +77,10 @@ function printHelp() {
   console.log('  help         Show this help message');
   console.log();
   console.log('Get started:');
-  console.log('  1. devwrapped auth     # Connect your GitHub account');
-  console.log('  2. devwrapped sync     # Upload your stats');
-  console.log('  3. devwrapped card     # View your profile');
+  console.log('  1. ccwrapped auth     # Connect your Google account');
+  console.log('  2. ccwrapped sync     # Upload your stats');
+  console.log('  3. ccwrapped card     # View your profile');
   console.log();
   console.log('Or install the plugin for auto-sync:');
-  console.log('  /plugin install devwrapped');
+  console.log('  /plugin install ccwrapped');
 }

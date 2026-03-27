@@ -78,6 +78,6 @@ export async function POST(request: Request) {
 
   // 5. Respond
   return NextResponse.json({
-    profile_url: `https://claudewrapped.dev/@${user.githubLogin}`,
+    profile_url: user.username ? `https://ccwrapped.dev/@${user.username}` : null,
   });
 }

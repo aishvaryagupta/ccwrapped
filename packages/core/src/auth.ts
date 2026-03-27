@@ -1,22 +1,21 @@
-import type { AuthResult, DeviceCodeResponse, GitHubUser } from './types.js';
+import type { AuthResult, DeviceCodeResponse, GoogleUser } from './types.js';
 
-const GITHUB_DEVICE_CODE_URL = 'https://github.com/login/device/code';
-const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
-const GITHUB_USER_URL = 'https://api.github.com/user';
+const GOOGLE_DEVICE_CODE_URL = 'https://oauth2.googleapis.com/device/code';
+const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
 export async function startDeviceFlow(
   clientId: string,
 ): Promise<DeviceCodeResponse | null> {
+  if (!clientId) return null;
+
   try {
-    const res = await fetch(GITHUB_DEVICE_CODE_URL, {
+    const res = await fetch(GOOGLE_DEVICE_CODE_URL, {
       method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
         client_id: clientId,
-        scope: 'read:user',
+        scope: 'openid email profile',
       }),
     });
 
@@ -29,6 +28,7 @@ export async function startDeviceFlow(
 
 export async function pollForToken(
   clientId: string,
+  clientSecret: string,
   deviceCode: string,
   interval: number,
 ): Promise<AuthResult> {
@@ -39,25 +39,29 @@ export async function pollForToken(
     await sleep(pollInterval * 1000);
 
     try {
-      const res = await fetch(GITHUB_TOKEN_URL, {
+      const res = await fetch(GOOGLE_TOKEN_URL, {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
           client_id: clientId,
+          client_secret: clientSecret,
           device_code: deviceCode,
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
         }),
       });
 
-      const data = (await res.json()) as Record<string, string>;
+      const data = (await res.json()) as Record<string, unknown>;
 
       if (data.access_token) {
-        const user = await fetchGitHubUser(data.access_token);
+        const user = await fetchGoogleUser(data.access_token as string);
         if (!user) return { ok: false, error: 'network' };
-        return { ok: true, token: data.access_token, login: user.login };
+        return {
+          ok: true,
+          token: data.access_token as string,
+          refreshToken: data.refresh_token as string,
+          expiresIn: Number(data.expires_in),
+          email: user.email,
+        };
       }
 
       switch (data.error) {
@@ -67,6 +71,7 @@ export async function pollForToken(
           pollInterval += 5;
           continue;
         case 'expired_token':
+        case 'invalid_grant':
           return { ok: false, error: 'expired' };
         case 'access_denied':
           return { ok: false, error: 'denied' };
@@ -79,11 +84,11 @@ export async function pollForToken(
   }
 }
 
-export async function fetchGitHubUser(
+export async function fetchGoogleUser(
   token: string,
-): Promise<GitHubUser | null> {
+): Promise<GoogleUser | null> {
   try {
-    const res = await fetch(GITHUB_USER_URL, {
+    const res = await fetch(GOOGLE_USERINFO_URL, {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
@@ -91,8 +96,37 @@ export async function fetchGitHubUser(
     });
 
     if (!res.ok) return null;
-    const data = (await res.json()) as GitHubUser;
-    return data;
+    return (await res.json()) as GoogleUser;
+  } catch {
+    return null;
+  }
+}
+
+export async function refreshAccessToken(
+  clientId: string,
+  clientSecret: string,
+  refreshToken: string,
+): Promise<{ accessToken: string; expiresIn: number } | null> {
+  try {
+    const res = await fetch(GOOGLE_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token',
+      }),
+    });
+
+    if (!res.ok) return null;
+    const data = (await res.json()) as Record<string, unknown>;
+    if (!data.access_token) return null;
+
+    return {
+      accessToken: data.access_token as string,
+      expiresIn: Number(data.expires_in),
+    };
   } catch {
     return null;
   }

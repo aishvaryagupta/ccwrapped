@@ -1,10 +1,10 @@
-# devwrapped — Implementation Plan
+# ccwrapped — Implementation Plan
 
 ## What We're Building
 
 A social stats tracker for Claude Code developers. A Claude Code plugin automatically syncs usage stats after every session. Users get a beautiful shareable card, public profile, and leaderboard ranking — with zero daily effort.
 
-**Name:** devwrapped
+**Name:** ccwrapped
 **Tagline:** "Your Claude Code stats, visualized and shared."
 **Stack:** TypeScript monorepo (Turborepo) — Claude Code Plugin + CLI fallback (Node.js) + Web (Next.js on Vercel) + DB (Supabase)
 
@@ -12,16 +12,16 @@ A social stats tracker for Claude Code developers. A Claude Code plugin automati
 
 ```
 # Inside Claude Code — one-time setup, auto-syncs forever
-/plugin marketplace add devwrapped-org/devwrapped-plugin
-/plugin install devwrapped@devwrapped
+/plugin marketplace add ccwrapped-org/ccwrapped-plugin
+/plugin install ccwrapped@ccwrapped
 ```
 
 ### Fallback Install Path
 
 ```
 # Terminal — manual sync when needed
-npx devwrapped          # local stats preview
-npx devwrapped sync     # manual upload
+npx ccwrapped          # local stats preview
+npx ccwrapped sync     # manual upload
 ```
 
 ---
@@ -29,7 +29,7 @@ npx devwrapped sync     # manual upload
 ## Architecture
 
 ```
-devwrapped/                          (turborepo monorepo)
+ccwrapped/                          (turborepo monorepo)
 ├── apps/
 │   ├── plugin/                   Claude Code plugin (PRIMARY install path)
 │   │   ├── .claude-plugin/
@@ -41,7 +41,7 @@ devwrapped/                          (turborepo monorepo)
 │   │   │   └── auth.js           GitHub Device Flow (first-run only)
 │   │   └── package.json
 │   │
-│   ├── cli/                      npm package "devwrapped" (FALLBACK, < 5MB)
+│   ├── cli/                      npm package "ccwrapped" (FALLBACK, < 5MB)
 │   │   ├── src/
 │   │   │   ├── commands/
 │   │   │   │   ├── sync.ts       Manual upload (backfill + catch missed hooks)
@@ -52,7 +52,7 @@ devwrapped/                          (turborepo monorepo)
 │   │   │   └── index.ts          CLI entry point
 │   │   └── package.json
 │   │
-│   └── web/                      Next.js on Vercel (devwrapped.dev)
+│   └── web/                      Next.js on Vercel (ccwrapped.dev)
 │       ├── app/
 │       │   ├── page.tsx          Landing page — sell the card + "Preview My Stats" demo
 │       │   ├── [username]/
@@ -96,7 +96,7 @@ User's machine                              Cloud (Vercel + Supabase)
 │ └───────────────────────┘│                │                             │
 │                         │                 │  GET /api/card/[username]   │
 │ ┌─ FALLBACK (CLI) ─────┐│                │  └─ Satori → PNG card       │
-│ │ npx devwrapped sync      ││  manual POST  │                             │
+│ │ npx ccwrapped sync      ││  manual POST  │                             │
 │ │ → full backfill       ││──────────────▶│  GET /leaderboard           │
 │ └───────────────────────┘│                │  └─ Top users by tokens     │
 │                         │                 │                             │
@@ -112,7 +112,7 @@ User's machine                              Cloud (Vercel + Supabase)
 | Path | Trigger | Frequency | What Happens |
 |---|---|---|---|
 | **Plugin (primary)** | SessionEnd / Stop / SubagentStop hooks | Automatic, every session | Parse transcript JSONL → POST aggregates to API |
-| **CLI (fallback)** | User runs `npx devwrapped sync` | Manual, on-demand | Full scan of all JSONL files → backfill missing days |
+| **CLI (fallback)** | User runs `npx ccwrapped sync` | Manual, on-demand | Full scan of all JSONL files → backfill missing days |
 | **Web demo (preview)** | User clicks "Preview My Stats" on landing page | One-time, in-browser | File System Access API reads local logs → client-side render only, no upload |
 
 Plugin and CLI share the same `packages/core` parser and payload builder. One real pipeline, one demo.
@@ -136,7 +136,7 @@ Only aggregated numbers leave the machine. Never raw logs, session content, file
 
 **What's NOT uploaded:** Session content, file paths, project names, timestamps within a day, raw JSONL data.
 
-**Minimal mode:** `devwrapped sync --minimal` uploads tokens + date only (no model breakdown, session/project counts).
+**Minimal mode:** `ccwrapped sync --minimal` uploads tokens + date only (no model breakdown, session/project counts).
 
 ---
 
@@ -305,12 +305,12 @@ Subscribe to multiple hooks for redundancy. The sync script is idempotent — mu
 1. Receive hook input on stdin (includes `transcript_path`, `session_id`)
 2. Read and parse the JSONL transcript file
 3. Aggregate tokens by model for today's date
-4. Check local state (`~/.config/devwrapped/state.json`) — skip if session already synced
-5. POST daily summary to `devwrapped.dev/api/sync`
+4. Check local state (`~/.config/ccwrapped/state.json`) — skip if session already synced
+5. POST daily summary to `ccwrapped.dev/api/sync`
 6. Record synced session_id in local state
 7. Exit 0 (always — never fail loudly)
 
-**Local state file** (`~/.config/devwrapped/state.json`):
+**Local state file** (`~/.config/ccwrapped/state.json`):
 ```json
 {
   "synced_sessions": ["session-id-1", "session-id-2"],
@@ -324,11 +324,11 @@ Subscribe to multiple hooks for redundancy. The sync script is idempotent — mu
 ```json
 // .claude-plugin/plugin.json
 {
-  "name": "devwrapped",
+  "name": "ccwrapped",
   "version": "0.1.0",
-  "description": "Auto-sync your Claude Code usage stats to devwrapped.dev",
-  "homepage": "https://devwrapped.dev",
-  "repository": "https://github.com/devwrapped-org/devwrapped-plugin"
+  "description": "Auto-sync your Claude Code usage stats to ccwrapped.dev",
+  "homepage": "https://ccwrapped.dev",
+  "repository": "https://github.com/ccwrapped-org/ccwrapped-plugin"
 }
 ```
 
@@ -345,17 +345,17 @@ Subscribe to multiple hooks for redundancy. The sync script is idempotent — mu
 **Plugin flow:**
 ```
 First time a hook fires after install:
-→ Plugin detects no auth token in ~/.config/devwrapped/state.json
+→ Plugin detects no auth token in ~/.config/ccwrapped/state.json
 → Queues auth for next interactive session
 → On next Stop hook, prints to stderr (visible in Claude Code):
 
-  devwrapped: First-time setup needed.
-  Run "npx devwrapped auth" to connect your GitHub account.
+  ccwrapped: First-time setup needed.
+  Run "npx ccwrapped auth" to connect your GitHub account.
 ```
 
 **CLI flow:**
 ```
-$ npx devwrapped auth
+$ npx ccwrapped auth
 
 ! First, copy your one-time code: AB12-CD34
 → Press Enter to open github.com/login/device in your browser...
@@ -366,7 +366,7 @@ $ npx devwrapped auth
   Token saved. Plugin will auto-sync from now on.
 ```
 
-**Token storage:** `~/.config/devwrapped/state.json` with `chmod 0600`. Shared between plugin and CLI.
+**Token storage:** `~/.config/ccwrapped/state.json` with `chmod 0600`. Shared between plugin and CLI.
 
 ---
 
@@ -383,7 +383,7 @@ $ npx devwrapped auth
 - Model usage pie chart (Opus / Sonnet / Haiku)
 - Usage heatmap (mini GitHub-contribution-graph style)
 - Time period label ("This week" / "This month" / "All time")
-- devwrapped.dev branding
+- ccwrapped.dev branding
 
 **OG meta tags:** Auto-set on profile pages so Twitter/LinkedIn unfurls show the card image.
 
@@ -467,14 +467,14 @@ jobs:
 The CLI is a fallback for users who prefer the terminal, need to backfill data, or debug sync issues.
 
 ```
-devwrapped                   Show terminal usage summary (local only, no upload)
-devwrapped auth              GitHub Device Flow — authenticate + save token
-devwrapped auth --logout     Remove stored credentials
-devwrapped sync              Manual full sync — backfills all missing days
-devwrapped sync --minimal    Upload tokens + date only (no model/session/project)
-devwrapped card              Open your card URL in browser
-devwrapped card --copy       Copy card URL to clipboard
-devwrapped status            Show sync status: last sync time, sessions synced, auth state
+ccwrapped                   Show terminal usage summary (local only, no upload)
+ccwrapped auth              GitHub Device Flow — authenticate + save token
+ccwrapped auth --logout     Remove stored credentials
+ccwrapped sync              Manual full sync — backfills all missing days
+ccwrapped sync --minimal    Upload tokens + date only (no model/session/project)
+ccwrapped card              Open your card URL in browser
+ccwrapped card --copy       Copy card URL to clipboard
+ccwrapped status            Show sync status: last sync time, sessions synced, auth state
 ```
 
 ---
@@ -486,7 +486,7 @@ Claude Code logs are local per machine. If a user syncs from two machines, the s
 **v0.1 approach:** Detect and warn, don't silently overwrite.
 
 ```
-$ devwrapped sync
+$ ccwrapped sync
 ⚠ Conflict detected for 2026-03-25:
   Last sync: 150K tokens (from machine "work-mbp")
   This machine: 80K tokens
@@ -535,7 +535,7 @@ $ devwrapped sync
 
 **Goal:** Shared parser and payload builder with full test coverage.
 
-- [ ] Verify npm name "devwrapped" is available
+- [ ] Verify npm name "ccwrapped" is available
 - [ ] Initialize turborepo monorepo structure
 - [ ] Fork JSONL parser into `packages/core/parser.ts` (~800 lines)
   - Strip session-block and billing-block logic (not needed)
@@ -554,19 +554,19 @@ $ devwrapped sync
 - [ ] Plugin manifest (`.claude-plugin/plugin.json`)
 - [ ] Hook subscriptions (`hooks/hooks.json` — SessionEnd, Stop, SubagentStop)
 - [ ] Sync script (`dist/sync.js`) — parse transcript, aggregate, POST
-- [ ] Idempotency via local session tracking (`~/.config/devwrapped/state.json`)
+- [ ] Idempotency via local session tracking (`~/.config/ccwrapped/state.json`)
 - [ ] Silent failure handling (never crash, never block Claude Code)
 - [ ] P0 unit tests for sync script + idempotency
 - [ ] Plugin marketplace repo setup (GitHub)
 
 **CLI:**
 - [ ] CLI entry point with command routing
-- [ ] `devwrapped` default command — terminal summary table (pretty-printed)
-- [ ] `devwrapped auth` — GitHub Device Flow implementation (shared with plugin)
-- [ ] `devwrapped sync` — full backfill of all missing days
-- [ ] `devwrapped sync --minimal` — reduced payload mode
-- [ ] `devwrapped card` — open profile URL in default browser
-- [ ] `devwrapped status` — show sync health, last sync time, auth state
+- [ ] `ccwrapped` default command — terminal summary table (pretty-printed)
+- [ ] `ccwrapped auth` — GitHub Device Flow implementation (shared with plugin)
+- [ ] `ccwrapped sync` — full backfill of all missing days
+- [ ] `ccwrapped sync --minimal` — reduced payload mode
+- [ ] `ccwrapped card` — open profile URL in default browser
+- [ ] `ccwrapped status` — show sync health, last sync time, auth state
 - [ ] Conflict detection (query last sync, warn on machine_id mismatch)
 - [ ] Integration tests with fixture JSONL directories
 
@@ -609,9 +609,9 @@ $ devwrapped sync
 - [ ] Error states and empty states for all pages
 - [ ] Mobile-responsive profile + leaderboard
 - [ ] CLI error messages (no logs found, auth failed, network error)
-- [ ] Plugin first-run experience (no auth → prompt user to run `npx devwrapped auth`)
+- [ ] Plugin first-run experience (no auth → prompt user to run `npx ccwrapped auth`)
 - [ ] README with install instructions + screenshots
-- [ ] Submit plugin to official Anthropic marketplace (goal: `/plugin install devwrapped`)
+- [ ] Submit plugin to official Anthropic marketplace (goal: `/plugin install ccwrapped`)
 - [ ] Launch:
   - [ ] Hacker News "Show HN" post
   - [ ] r/ClaudeAI post

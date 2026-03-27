@@ -37,8 +37,8 @@ export async function GET(
   // Fetch user
   const { data: user } = await supabase
     .from('users')
-    .select('id, github_login, avatar_url')
-    .eq('github_login', username)
+    .select('id, username, avatar_url')
+    .eq('username', username)
     .single();
 
   if (!user) {
@@ -143,14 +143,14 @@ export async function GET(
           )}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontSize: '32px', fontWeight: 700 }}>
-              @{user.github_login}
+              @{user.username}
             </span>
             <span style={{ fontSize: '16px', color: dim }}>
               {periodLabel}
             </span>
           </div>
           <div style={{ marginLeft: 'auto', fontSize: '20px', color: accent, fontWeight: 700 }}>
-            devwrapped
+            ccwrapped
           </div>
         </div>
 
@@ -267,7 +267,7 @@ export async function GET(
             color: dim,
           }}
         >
-          devwrapped.dev/@{user.github_login}
+          ccwrapped.dev/@{user.username}
         </div>
       </div>
     ),

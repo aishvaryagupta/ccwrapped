@@ -22,15 +22,21 @@ export const MAX_BACKFILL_DAYS = 30;
 export const SCHEMA_VERSION = 1;
 export const CLIENT_VERSION = '0.1.0';
 
-// devwrapped state
-export const CONFIG_DIR_NAME = 'devwrapped';
+// ccwrapped state
+export const CONFIG_DIR_NAME = 'ccwrapped';
 export const STATE_FILE_NAME = 'state.json';
 export const MAX_SYNCED_SESSIONS = 500;
 
 // API
-export const API_BASE_URL = 'https://devwrapped.dev/api';
-export const GITHUB_CLIENT_ID = ''; // Placeholder until OAuth App is created
+export const API_BASE_URL = 'https://ccwrapped.dev/api';
+export const GOOGLE_CLIENT_ID = '266471192159-3nbjppkhkee2v6eur6vibribf7hhst0v.apps.googleusercontent.com';
+export const GOOGLE_CLIENT_SECRET = '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';
 export const HTTP_TIMEOUT_MS = 5000;
+
+// Username validation
+export const USERNAME_MIN_LENGTH = 3;
+export const USERNAME_MAX_LENGTH = 30;
+export const USERNAME_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/;
 
 // Model pricing (USD per million tokens) — v0.1 hardcoded
 export interface ModelPricing {

@@ -9,6 +9,7 @@ import {
   SCHEMA_VERSION,
   getModelPricing,
 } from './consts.js';
+import { type LiveModelPricing, calculateLiveCost } from './pricing.js';
 import {
   type DaySummary,
   type ModelBreakdown,
@@ -21,13 +22,29 @@ import {
 // Cost calculation
 // ---------------------------------------------------------------------------
 
-export function calculateEntryCost(entry: ParsedEntry): number {
+export function calculateEntryCost(
+  entry: ParsedEntry,
+  livePricing?: Map<string, LiveModelPricing>,
+): number {
   if (!entry.model) return 0;
 
-  const pricing = getModelPricing(entry.model);
   const { inputTokens, outputTokens, cacheCreationInputTokens, cacheReadInputTokens } =
     entry.usage;
 
+  if (livePricing) {
+    const cost = calculateLiveCost(
+      entry.model,
+      inputTokens,
+      outputTokens,
+      cacheCreationInputTokens,
+      cacheReadInputTokens,
+      livePricing,
+    );
+    if (cost != null) return cost;
+  }
+
+  // Fallback to hardcoded pricing
+  const pricing = getModelPricing(entry.model);
   return (
     (inputTokens * pricing.input) / 1_000_000 +
     (outputTokens * pricing.output) / 1_000_000 +
@@ -52,6 +69,7 @@ export function buildSyncPayload(
   entries: ParsedEntry[],
   machineId: string,
   clientVersion: string,
+  livePricing?: Map<string, LiveModelPricing>,
 ): SyncPayload {
   // Group entries by date
   const byDate = new Map<string, ParsedEntry[]>();
@@ -87,7 +105,7 @@ export function buildSyncPayload(
       outputTokens += entry.usage.outputTokens;
       cacheCreationTokens += entry.usage.cacheCreationInputTokens;
       cacheReadTokens += entry.usage.cacheReadInputTokens;
-      costUSD += calculateEntryCost(entry);
+      costUSD += calculateEntryCost(entry, livePricing);
 
       if (entry.sessionId) {
         sessions.add(entry.sessionId);

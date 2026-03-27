@@ -130,7 +130,7 @@ describe('extractProjectFromPath', () => {
 // ---------------------------------------------------------------------------
 
 describe('scanAllFiles', () => {
-  const tempDir = join(tmpdir(), `devwrapped-test-${Date.now()}`);
+  const tempDir = join(tmpdir(), `ccwrapped-test-${Date.now()}`);
   const projectsDir = join(tempDir, 'projects');
   const projectA = join(projectsDir, 'project-a');
   const projectB = join(projectsDir, 'project-b');

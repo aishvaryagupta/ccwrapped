@@ -16,7 +16,7 @@ import {
 let tempDir: string;
 
 beforeEach(() => {
-  tempDir = join(tmpdir(), `devwrapped-state-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  tempDir = join(tmpdir(), `ccwrapped-state-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 });
 
 afterEach(() => {
@@ -29,7 +29,7 @@ describe('readState', () => {
     expect(state.synced_sessions).toEqual([]);
     expect(state.last_sync).toBeNull();
     expect(state.auth_token).toBeNull();
-    expect(state.github_login).toBeNull();
+    expect(state.username).toBeNull();
     expect(state.machine_id).toMatch(/^[0-9a-f]{12}$/);
   });
 
@@ -45,8 +45,10 @@ describe('readState', () => {
     const existing = {
       synced_sessions: ['sess-1'],
       last_sync: '2026-03-27T10:00:00Z',
-      auth_token: 'gho_test',
-      github_login: 'testuser',
+      auth_token: 'ya29_test',
+      refresh_token: '1//test_refresh',
+      token_expiry: '2026-03-27T11:00:00Z',
+      username: 'testuser',
       machine_id: 'abc123def456',
     };
     writeState(existing, tempDir);
@@ -121,15 +123,16 @@ describe('auth helpers', () => {
     expect(getAuthToken(tempDir)).toBeNull();
   });
 
-  it('setAuthToken stores token and login', () => {
-    setAuthToken('gho_abc', 'testuser', tempDir);
-    expect(getAuthToken(tempDir)).toBe('gho_abc');
+  it('setAuthToken stores token, refresh token, and expiry', () => {
+    setAuthToken('ya29_abc', '1//refresh', 3600, tempDir);
+    expect(getAuthToken(tempDir)).toBe('ya29_abc');
     const state = readState(tempDir);
-    expect(state.github_login).toBe('testuser');
+    expect(state.refresh_token).toBe('1//refresh');
+    expect(state.token_expiry).toBeTruthy();
   });
 
   it('clearState resets everything', () => {
-    setAuthToken('gho_abc', 'testuser', tempDir);
+    setAuthToken('ya29_abc', '1//refresh', 3600, tempDir);
     addSyncedSession('sess-1', tempDir);
     clearState(tempDir);
     const state = readState(tempDir);

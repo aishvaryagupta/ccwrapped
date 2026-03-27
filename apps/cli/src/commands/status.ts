@@ -1,15 +1,15 @@
-import { getConfigDir, readState } from '@devwrapped/core';
+import { getConfigDir, readState } from '@ccwrapped/core';
 import { bold, dim, green, red } from '../ui.js';
 
 export async function run(_flags: string[]): Promise<void> {
   const state = readState();
 
-  console.log(bold('devwrapped status'));
+  console.log(bold('ccwrapped status'));
   console.log();
 
   // Auth
   if (state.auth_token) {
-    console.log(`  Auth:       ${green(`@${state.github_login ?? 'unknown'}`)}`);
+    console.log(`  Auth:       ${green(state.username ? `@${state.username}` : 'Authenticated (no username yet)')}`);
   } else {
     console.log(`  Auth:       ${red('Not authenticated')}`);
   }

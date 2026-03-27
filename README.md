@@ -1,4 +1,4 @@
-# devwrapped
+# ccwrapped
 
 **Your Claude Code stats, visualized and shared.**
 
@@ -12,14 +12,14 @@ Think **Spotify Wrapped meets WakaTime** — for Claude Code.
 
 ```bash
 # Inside Claude Code
-/plugin marketplace add devwrapped-org/devwrapped-plugin
-/plugin install devwrapped
+/plugin marketplace add ccwrapped-org/ccwrapped-plugin
+/plugin install ccwrapped
 ```
 
 Then authenticate once:
 
 ```bash
-npx devwrapped auth
+npx ccwrapped auth
 ```
 
 Done. Every session auto-syncs in the background.
@@ -28,27 +28,27 @@ Done. Every session auto-syncs in the background.
 
 ```bash
 # View local stats
-npx devwrapped
+npx ccwrapped
 
-# Sync to devwrapped.dev
-npx devwrapped sync
+# Sync to ccwrapped.dev
+npx ccwrapped sync
 
 # Open your profile
-npx devwrapped card
+npx ccwrapped card
 ```
 
 ## CLI Commands
 
 | Command | Description |
 |---|---|
-| `devwrapped` | Show local usage summary |
-| `devwrapped auth` | Authenticate with GitHub |
-| `devwrapped auth --logout` | Remove stored credentials |
-| `devwrapped sync` | Sync stats to devwrapped.dev |
-| `devwrapped sync --minimal` | Upload tokens only (no model/session data) |
-| `devwrapped card` | Open your profile in browser |
-| `devwrapped card --copy` | Copy profile URL to clipboard |
-| `devwrapped status` | Show sync status and config |
+| `ccwrapped` | Show local usage summary |
+| `ccwrapped auth` | Authenticate with Google |
+| `ccwrapped auth --logout` | Remove stored credentials |
+| `ccwrapped sync` | Sync stats to ccwrapped.dev |
+| `ccwrapped sync --minimal` | Upload tokens only (no model/session data) |
+| `ccwrapped card` | Open your profile in browser |
+| `ccwrapped card --copy` | Copy profile URL to clipboard |
+| `ccwrapped status` | Show sync status and config |
 
 ## What Gets Uploaded
 
@@ -64,11 +64,11 @@ Only aggregated daily totals. **Never** your code, chats, file paths, or project
 ## Architecture
 
 ```
-devwrapped/                     Turborepo monorepo
+ccwrapped/                     Turborepo monorepo
 ├── packages/core/              Shared JSONL parser, payload builder, types
 ├── apps/plugin/                Claude Code plugin (auto-sync via hooks)
-├── apps/cli/                   CLI tool (npx devwrapped)
-└── apps/web/                   Next.js on Vercel (devwrapped.dev)
+├── apps/cli/                   CLI tool (npx ccwrapped)
+└── apps/web/                   Next.js on Vercel (ccwrapped.dev)
     ├── POST /api/sync          Receive + validate + store daily stats
     ├── GET /api/card/[user]    OG card image (Satori, edge-cached 1hr)
     ├── /                       Landing page
@@ -100,8 +100,8 @@ cd apps/web && yarn dev
 ## Privacy
 
 - Only aggregated numbers leave your machine
-- Auth via GitHub OAuth Device Flow (works in SSH/containers)
-- State file at `~/.config/devwrapped/state.json` (chmod 0600)
+- Auth via Google OAuth Device Flow (works in SSH/containers)
+- State file at `~/.config/ccwrapped/state.json` (chmod 0600)
 - All source code is open for audit
 
 ## License

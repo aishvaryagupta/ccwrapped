@@ -3,14 +3,16 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Users table
 CREATE TABLE users (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  github_id       bigint UNIQUE NOT NULL,
-  github_login    text NOT NULL,
+  google_id       text UNIQUE NOT NULL,
+  username        text UNIQUE,
+  email           text NOT NULL,
+  display_name    text,
   avatar_url      text,
   created_at      timestamptz DEFAULT now(),
   settings        jsonb DEFAULT '{}'::jsonb
 );
 
-CREATE INDEX idx_users_github_login ON users (github_login);
+-- UNIQUE constraint on username already creates an implicit B-tree index
 
 -- Daily stats (one row per user per day, upsert on sync)
 CREATE TABLE daily_stats (
@@ -91,7 +93,7 @@ CREATE OR REPLACE FUNCTION get_leaderboard(
   p_since date,
   p_limit int DEFAULT 100
 ) RETURNS TABLE (
-  github_login text,
+  username text,
   avatar_url text,
   total_tokens bigint,
   total_sessions bigint
@@ -99,14 +101,15 @@ CREATE OR REPLACE FUNCTION get_leaderboard(
 LANGUAGE sql STABLE
 AS $$
   SELECT
-    u.github_login,
+    u.username,
     u.avatar_url,
     SUM(ds.input_tokens + ds.output_tokens)::bigint AS total_tokens,
     SUM(ds.session_count)::bigint AS total_sessions
   FROM daily_stats ds
   JOIN users u ON u.id = ds.user_id
   WHERE ds.date >= p_since
-  GROUP BY u.id, u.github_login, u.avatar_url
+    AND u.username IS NOT NULL
+  GROUP BY u.id, u.username, u.avatar_url
   ORDER BY total_tokens DESC
   LIMIT p_limit;
 $$;

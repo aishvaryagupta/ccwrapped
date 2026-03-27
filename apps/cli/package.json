@@ -1,9 +1,9 @@
 {
-  "name": "devwrapped",
+  "name": "ccwrapped",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "devwrapped": "./dist/index.js"
+    "ccwrapped": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -12,7 +12,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@devwrapped/core": "0.1.0"
+    "@ccwrapped/core": "0.1.0"
   },
   "devDependencies": {
     "vitest": "^3.1.0",

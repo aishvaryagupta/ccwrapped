@@ -7,7 +7,7 @@ import {
   SCHEMA_VERSION,
   SyncPayloadSchema,
   type SyncPayload,
-} from '@devwrapped/core';
+} from '@ccwrapped/core';
 
 type ValidationResult =
   | { valid: true; payload: SyncPayload }
