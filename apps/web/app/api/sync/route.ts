@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyAndUpsertUser } from '@/lib/auth';
 import { checkAndUpdateRateLimit } from '@/lib/rate-limit';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { validateSyncPayload } from '@/lib/validation';
 
 export async function POST(request: Request) {
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     synced_at: new Date().toISOString(),
   }));
 
-  const { error } = await supabase
+  const { error } = await getSupabaseAdmin()
     .from('daily_stats')
     .upsert(rows, { onConflict: 'user_id,date' });
 
@@ -78,6 +78,6 @@ export async function POST(request: Request) {
 
   // 5. Respond
   return NextResponse.json({
-    profile_url: `https://devwrapped.dev/@${user.githubLogin}`,
+    profile_url: `https://claudewrapped.dev/@${user.githubLogin}`,
   });
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { verifyAndUpsertUser } from '@/lib/auth';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request: Request) {
   // Auth
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   }
 
   // Query
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from('daily_stats')
     .select('machine_id, synced_at, input_tokens, output_tokens')
     .eq('user_id', auth.user.userId)

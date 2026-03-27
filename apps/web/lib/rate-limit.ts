@@ -1,11 +1,11 @@
-import { supabase } from './supabase';
+import { getSupabaseAdmin } from './supabase';
 
 const ONE_HOUR_MS = 3600_000;
 
 export async function checkAndUpdateRateLimit(
   userId: string,
 ): Promise<{ allowed: boolean; retryAfter?: number }> {
-  const { data, error } = await supabase.rpc('check_rate_limit', {
+  const { data, error } = await getSupabaseAdmin().rpc('check_rate_limit', {
     p_user_id: userId,
     p_interval_ms: ONE_HOUR_MS,
   });
@@ -21,7 +21,7 @@ export async function checkAndUpdateRateLimit(
   }
 
   // Blocked — calculate retry-after from the rate limit row
-  const { data: limitRow } = await supabase
+  const { data: limitRow } = await getSupabaseAdmin()
     .from('sync_rate_limits')
     .select('last_sync')
     .eq('user_id', userId)

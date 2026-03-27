@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { getSupabaseAdmin } from './supabase';
 
 export interface AuthenticatedUser {
   userId: string;
@@ -44,7 +44,7 @@ export async function verifyAndUpsertUser(
   }
 
   // Upsert user
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from('users')
     .upsert(
       {

@@ -1,0 +1,6 @@
+{
+  "buildCommand": "turbo run build --filter=@claudewrapped/web",
+  "outputDirectory": "apps/web/.next",
+  "framework": "nextjs",
+  "installCommand": "yarn install"
+}
