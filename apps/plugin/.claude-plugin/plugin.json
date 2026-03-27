@@ -1,7 +1,11 @@
 {
   "name": "ccwrapped",
+  "version": "0.1.0",
   "description": "Auto-sync your Claude Code usage stats to ccwrapped.dev",
   "author": {
-    "name": "ccwrapped"
-  }
+    "name": "aishvaryagupta"
+  },
+  "repository": "https://github.com/aishvaryagupta/ccwrapped-plugin",
+  "homepage": "https://ccwrapped.dev",
+  "license": "MIT"
 }

@@ -1,9 +1,8 @@
 {
-  "name": "ccwrapped",
-  "version": "0.1.0",
-  "type": "module",
+  "name": "ccwrapdev",
+  "version": "0.1.3",
   "bin": {
-    "ccwrapped": "./dist/index.js"
+    "ccwrapdev": "dist/bin.js"
   },
   "scripts": {
     "build": "tsc",
@@ -11,9 +10,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
-    "@ccwrapped/core": "0.1.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "vitest": "^3.1.0",
     "@types/node": "^22.0.0",
@@ -23,6 +20,7 @@
     "node": ">=20"
   },
   "files": [
-    "dist/"
+    "dist/bin.js",
+    "dist/index.mjs"
   ]
 }
