@@ -6,7 +6,7 @@ export const runtime = 'edge';
 // Edge runtime has no persistent process — create client per request.
 // Uses anon key (not service role) since card data is publicly readable via RLS.
 const supabaseUrl = process.env.SUPABASE_URL ?? '';
-const supabaseKey = process.env.SUPABASE_ANON_KEY ?? '';
+const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? '';
 
 function formatTokens(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
