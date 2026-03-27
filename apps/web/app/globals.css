@@ -1,1 +1,391 @@
 @import "tailwindcss";
+
+/*
+ * Design tokens — shadcn/ui + Tailwind 4.
+ * Zinc base + Claude terracotta (#da7756) accent.
+ * Light/dark mode via next-themes (class strategy).
+ *
+ * @theme inline → values reference CSS vars that swap on .dark class.
+ */
+
+/* ============================================================
+ * Light mode (default)
+ * ============================================================ */
+
+:root {
+  --background: oklch(0.985 0 0);
+  --foreground: oklch(0.09 0.005 286);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.09 0.005 286);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.09 0.005 286);
+
+  --primary: oklch(0.62 0.14 46);
+  --primary-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.94 0.005 286);
+  --secondary-foreground: oklch(0.15 0.005 286);
+
+  --muted: oklch(0.94 0.005 286);
+  --muted-foreground: oklch(0.45 0.01 286);
+
+  --accent: oklch(0.94 0.005 286);
+  --accent-foreground: oklch(0.15 0.005 286);
+
+  --destructive: oklch(0.55 0.22 29);
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.90 0.005 286);
+  --input: oklch(0.90 0.005 286);
+  --ring: oklch(0.62 0.14 46);
+
+  --chart-1: oklch(0.62 0.14 46);
+  --chart-2: oklch(0.55 0.12 260);
+  --chart-3: oklch(0.50 0.15 310);
+  --chart-4: oklch(0.58 0.10 200);
+  --chart-5: oklch(0.62 0.08 140);
+
+  --sidebar: oklch(0.97 0.005 286);
+  --sidebar-foreground: oklch(0.09 0.005 286);
+  --sidebar-primary: oklch(0.62 0.14 46);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.94 0.005 286);
+  --sidebar-accent-foreground: oklch(0.15 0.005 286);
+  --sidebar-border: oklch(0.90 0.005 286);
+  --sidebar-ring: oklch(0.62 0.14 46);
+}
+
+/* ============================================================
+ * Dark mode
+ * ============================================================ */
+
+.dark {
+  --background: oklch(0.07 0.005 286);
+  --foreground: oklch(0.985 0 0);
+
+  --card: oklch(0.14 0.005 286);
+  --card-foreground: oklch(0.985 0 0);
+
+  --popover: oklch(0.14 0.005 286);
+  --popover-foreground: oklch(0.985 0 0);
+
+  --primary: oklch(0.68 0.13 46);
+  --primary-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.22 0.005 286);
+  --secondary-foreground: oklch(0.985 0 0);
+
+  --muted: oklch(0.22 0.005 286);
+  --muted-foreground: oklch(0.61 0.01 286);
+
+  --accent: oklch(0.22 0.005 286);
+  --accent-foreground: oklch(0.985 0 0);
+
+  --destructive: oklch(0.65 0.2 25);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --border: oklch(0.22 0.005 286);
+  --input: oklch(0.22 0.005 286);
+  --ring: oklch(0.68 0.13 46);
+
+  --chart-1: oklch(0.68 0.13 46);
+  --chart-2: oklch(0.60 0.12 260);
+  --chart-3: oklch(0.55 0.15 310);
+  --chart-4: oklch(0.65 0.10 200);
+  --chart-5: oklch(0.70 0.08 140);
+
+  --sidebar: oklch(0.14 0.005 286);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.68 0.13 46);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.22 0.005 286);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.22 0.005 286);
+  --sidebar-ring: oklch(0.68 0.13 46);
+}
+
+/* ============================================================
+ * @theme inline — maps CSS vars to Tailwind utilities
+ * ============================================================ */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  --animate-fade-in: fade-in 0.4s var(--ease-out) both;
+  --animate-slide-up: slide-up 0.4s var(--ease-out) both;
+  --animate-scale-in: scale-in 0.25s var(--ease-out) both;
+  --animate-bar-fill: bar-fill 0.6s var(--ease-out) both;
+}
+
+/* ============================================================
+ * Custom easing curves (Emil Kowalski)
+ * ============================================================ */
+
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ============================================================
+ * Base
+ * ============================================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ============================================================
+ * Keyframes
+ * ============================================================ */
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bar-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes skeleton-wave {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.65; }
+}
+
+/* ============================================================
+ * Entrance animations
+ * ============================================================ */
+
+.animate-fade-in {
+  animation: fade-in 0.4s var(--ease-out) both;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s var(--ease-out) both;
+}
+
+.animation-delay-50  { animation-delay: 50ms; }
+.animation-delay-100 { animation-delay: 100ms; }
+.animation-delay-150 { animation-delay: 150ms; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-250 { animation-delay: 250ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+.animation-delay-400 { animation-delay: 400ms; }
+
+/* ============================================================
+ * Interactive card surfaces
+ * ============================================================ */
+
+@media (hover: hover) and (pointer: fine) {
+  .card-interactive {
+    transition:
+      transform 200ms var(--ease-out),
+      box-shadow 200ms var(--ease-out),
+      border-color 200ms var(--ease-out);
+  }
+
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 8px 24px -4px oklch(0 0 0 / 0.15),
+      0 0 0 1px var(--primary) / 0.08;
+    border-color: oklch(from var(--primary) l c h / 0.15);
+  }
+
+  .card-interactive:active {
+    transform: translateY(0);
+    transition-duration: 80ms;
+  }
+}
+
+/* ============================================================
+ * Button press
+ * ============================================================ */
+
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  transition: transform 160ms var(--ease-out);
+}
+
+button:active:not(:disabled),
+[role="button"]:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* ============================================================
+ * Stat card value emphasis on hover
+ * ============================================================ */
+
+.stat-value {
+  transition: color 200ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-interactive:hover .stat-value {
+    color: var(--primary);
+  }
+}
+
+/* ============================================================
+ * Heatmap cell hover
+ * ============================================================ */
+
+@media (hover: hover) and (pointer: fine) {
+  .heatmap-cell {
+    transition: transform 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
+  }
+
+  .heatmap-cell:hover {
+    transform: scale(1.3);
+    z-index: 10;
+    box-shadow: 0 0 6px 1px oklch(from var(--primary) l c h / 0.2);
+    position: relative;
+  }
+}
+
+/* ============================================================
+ * Model chart bar fill
+ * ============================================================ */
+
+.bar-fill {
+  animation: bar-fill 0.6s var(--ease-out) both;
+  transform-origin: left;
+}
+
+/* ============================================================
+ * Nav link underline
+ * ============================================================ */
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-link-underline {
+    position: relative;
+  }
+
+  .nav-link-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background-color: var(--primary);
+    border-radius: 1px;
+    transition: width 200ms var(--ease-out), left 200ms var(--ease-out);
+  }
+
+  .nav-link-underline:hover::after,
+  .nav-link-underline[aria-current="page"]::after {
+    width: 100%;
+    left: 0;
+  }
+}
+
+/* ============================================================
+ * Skeleton stagger
+ * ============================================================ */
+
+.skeleton-stagger > * {
+  animation: skeleton-wave 1.5s ease infinite;
+}
+
+.skeleton-stagger > *:nth-child(1)  { animation-delay: 0ms; }
+.skeleton-stagger > *:nth-child(2)  { animation-delay: 50ms; }
+.skeleton-stagger > *:nth-child(3)  { animation-delay: 100ms; }
+.skeleton-stagger > *:nth-child(4)  { animation-delay: 150ms; }
+.skeleton-stagger > *:nth-child(5)  { animation-delay: 200ms; }
+.skeleton-stagger > *:nth-child(6)  { animation-delay: 250ms; }
+.skeleton-stagger > *:nth-child(7)  { animation-delay: 300ms; }
+.skeleton-stagger > *:nth-child(8)  { animation-delay: 350ms; }
+.skeleton-stagger > *:nth-child(9)  { animation-delay: 400ms; }
+.skeleton-stagger > *:nth-child(10) { animation-delay: 450ms; }
+
+/* ============================================================
+ * Reduced motion
+ * ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .card-interactive { transition: none; }
+  .heatmap-cell { transition: none; }
+  .bar-fill { animation: none; transform: scaleX(1); }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) { transition: none; }
+  .nav-link-underline::after { transition: none; }
+}

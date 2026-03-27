@@ -1,13 +1,16 @@
 'use client';
 
 import { useState } from 'react';
+import { Link as LinkIcon, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface CopyButtonProps {
   text: string;
   label?: string;
+  className?: string;
 }
 
-export function CopyButton({ text, label = 'Copy Profile URL' }: CopyButtonProps) {
+export function CopyButton({ text, label = 'Copy Profile URL', className }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -16,7 +19,6 @@ export function CopyButton({ text, label = 'Copy Profile URL' }: CopyButtonProps
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for older browsers
       const input = document.createElement('input');
       input.value = text;
       document.body.appendChild(input);
@@ -31,9 +33,23 @@ export function CopyButton({ text, label = 'Copy Profile URL' }: CopyButtonProps
   return (
     <button
       onClick={handleCopy}
-      className="bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg px-4 py-2 transition-colors text-sm"
+      className={cn(
+        "inline-flex items-center justify-center gap-2 rounded-md bg-secondary text-secondary-foreground px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        className,
+      )}
+      aria-label={copied ? 'Copied to clipboard' : label}
     >
-      {copied ? 'Copied!' : label}
+      {copied ? (
+        <>
+          <Check className="size-4" />
+          Copied!
+        </>
+      ) : (
+        <>
+          <LinkIcon className="size-4" />
+          {label}
+        </>
+      )}
     </button>
   );
 }

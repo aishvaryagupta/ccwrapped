@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Coins, Hash, FolderOpen, DollarSign, Download, Link as LinkIcon, Calendar } from 'lucide-react';
 import { CopyButton } from '@/components/copy-button';
 import { Heatmap } from '@/components/heatmap';
 import { ModelChart } from '@/components/model-chart';
 import { StatCard } from '@/components/stat-card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { fetchUserProfile, fetchUserStats } from '@/lib/queries';
 
 export const revalidate = 300;
@@ -15,16 +18,16 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
   return {
-    title: `@${username} — devwrapped`,
+    title: `@${username} — ccwrapped`,
     description: `Claude Code usage stats for @${username}`,
     openGraph: {
-      title: `@${username} — devwrapped`,
+      title: `@${username} — ccwrapped`,
       description: `Claude Code usage stats for @${username}`,
       images: [`/api/card/${username}.png`],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `@${username} — devwrapped`,
+      title: `@${username} — ccwrapped`,
       images: [`/api/card/${username}.png`],
     },
   };
@@ -88,86 +91,126 @@ export default async function ProfilePage({ params }: Props) {
     year: 'numeric',
   });
 
+  const activeDays = stats.length;
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <header className="flex items-start sm:items-center gap-4 sm:gap-5 mb-10">
         {user.avatarUrl && (
           <img
             src={user.avatarUrl}
-            alt={user.githubLogin}
-            width={64}
-            height={64}
-            className="rounded-full"
+            alt={`${user.username}'s avatar`}
+            width={80}
+            height={80}
+            className="rounded-full border-2 border-border shadow-sm"
           />
         )}
-        <div>
-          <h1 className="text-2xl font-bold">@{user.githubLogin}</h1>
-          <p className="text-sm text-gray-400">Joined {joinDate}</p>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold truncate">@{user.username}</h1>
+            <Badge variant="secondary" className="text-xs">
+              {activeDays} day{activeDays !== 1 ? 's' : ''} active
+            </Badge>
+          </div>
+          <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
+            <Calendar className="size-3.5" />
+            <span>Joined {joinDate}</span>
+          </div>
         </div>
-      </div>
+      </header>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <StatCard label="Tokens" value={formatTokens(totalTokens)} />
-        <StatCard label="Sessions" value={String(totalSessions)} />
-        <StatCard label="Projects" value={String(totalProjects)} />
-        <StatCard label="Cost" value={`$${totalCost.toFixed(2)}`} />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+        <StatCard
+          label="Tokens"
+          value={formatTokens(totalTokens)}
+          icon={<Coins className="size-5" />}
+        />
+        <StatCard
+          label="Sessions"
+          value={String(totalSessions)}
+          icon={<Hash className="size-5" />}
+        />
+        <StatCard
+          label="Projects"
+          value={String(totalProjects)}
+          icon={<FolderOpen className="size-5" />}
+        />
+        <StatCard
+          label="Cost"
+          value={`$${totalCost.toFixed(2)}`}
+          icon={<DollarSign className="size-5" />}
+        />
       </div>
 
       {/* Heatmap */}
-      <div className="mb-6">
+      <div className="mb-8">
         <Heatmap days={heatmapData} />
       </div>
 
-      {/* Model breakdown */}
-      {sortedModels.length > 0 && (
-        <div className="mb-6">
+      {/* Two-column: Model breakdown + Daily trend */}
+      <div className="grid sm:grid-cols-2 gap-4 mb-8">
+        {/* Model breakdown */}
+        {sortedModels.length > 0 && (
           <ModelChart models={sortedModels} />
-        </div>
-      )}
+        )}
 
-      {/* Daily trend (simple bars) */}
-      {stats.length > 0 && (() => {
-        const last30 = stats.slice(-30);
-        const maxDay = Math.max(
-          ...last30.map((d) => d.inputTokens + d.outputTokens),
-          1,
-        );
-        return (
-          <div className="bg-gray-900 rounded-lg p-4 sm:p-6 mb-6">
-            <h3 className="text-sm font-medium text-gray-400 mb-4">
-              Daily tokens (last 30 days)
-            </h3>
-            <div className="flex items-end gap-px h-24">
-              {last30.map((day) => {
-                const tokens = day.inputTokens + day.outputTokens;
-                const height = (tokens / maxDay) * 100;
-                return (
-                  <div
-                    key={day.date}
-                    className="flex-1 bg-violet-500/70 rounded-t-sm min-h-[2px]"
-                    style={{ height: `${Math.max(height, 2)}%` }}
-                    title={`${day.date}: ${formatTokens(tokens)}`}
-                  />
-                );
-              })}
+        {/* Daily trend */}
+        {stats.length > 0 && (() => {
+          const last30 = stats.slice(-30);
+          const maxDay = Math.max(
+            ...last30.map((d) => d.inputTokens + d.outputTokens),
+            1,
+          );
+          return (
+            <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm">
+              <h3 className="text-sm font-medium text-muted-foreground mb-4">
+                Daily tokens (last 30 days)
+              </h3>
+              <div className="flex items-end gap-px h-28">
+                {last30.map((day) => {
+                  const tokens = day.inputTokens + day.outputTokens;
+                  const height = (tokens / maxDay) * 100;
+                  return (
+                    <div
+                      key={day.date}
+                      className="flex-1 bg-primary/70 hover:bg-primary rounded-t-sm min-h-[2px] transition-colors"
+                      style={{ height: `${Math.max(height, 2)}%` }}
+                      title={`${day.date}: ${formatTokens(tokens)}`}
+                    />
+                  );
+                })}
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                <span>{last30[0]?.date ?? ''}</span>
+                <span>{last30[last30.length - 1]?.date ?? ''}</span>
+              </div>
             </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
+      </div>
 
-      {/* CTA */}
-      <div className="flex flex-col sm:flex-row gap-3 text-sm">
-        <a
-          href={`/api/card/${user.githubLogin}.png`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-violet-600 hover:bg-violet-500 text-white rounded-lg px-4 py-2 text-center transition-colors"
-        >
-          Download Card
-        </a>
-        <CopyButton text={`https://devwrapped.dev/@${user.githubLogin}`} />
+      {/* Share section */}
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm">
+        <h3 className="text-sm font-medium text-muted-foreground mb-4">Share your stats</h3>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <a
+            href={`/api/card/${user.username}.png`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button className="w-full sm:w-auto gap-2">
+              <Download className="size-4" />
+              Download Card
+            </Button>
+          </a>
+          <CopyButton
+            text={`https://ccwrapped.dev/@${user.username}`}
+            label="Copy Profile URL"
+            className="gap-2"
+          />
+        </div>
       </div>
     </div>
   );

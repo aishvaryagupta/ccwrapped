@@ -11,7 +11,8 @@ function getClient() {
 
 export interface UserProfile {
   id: string;
-  githubLogin: string;
+  username: string;
+  displayName: string | null;
   avatarUrl: string;
   createdAt: string;
 }
@@ -40,15 +41,16 @@ export async function fetchUserProfile(
   const supabase = getClient();
   const { data } = await supabase
     .from('users')
-    .select('id, github_login, avatar_url, created_at')
-    .eq('github_login', username)
+    .select('id, username, display_name, avatar_url, created_at')
+    .eq('username', username)
     .single();
 
   if (!data) return null;
 
   return {
     id: data.id,
-    githubLogin: data.github_login,
+    username: data.username,
+    displayName: data.display_name,
     avatarUrl: data.avatar_url,
     createdAt: data.created_at,
   };
@@ -79,7 +81,7 @@ export async function fetchUserStats(userId: string): Promise<DayStats[]> {
 
 export interface LeaderboardEntry {
   rank: number;
-  githubLogin: string;
+  username: string;
   avatarUrl: string;
   totalTokens: number;
   totalSessions: number;
@@ -113,13 +115,13 @@ export async function fetchLeaderboard(
   if (error || !data) return [];
 
   return (data as Array<{
-    github_login: string;
+    username: string;
     avatar_url: string;
     total_tokens: number;
     total_sessions: number;
   }>).map((row, i) => ({
     rank: i + 1,
-    githubLogin: row.github_login,
+    username: row.username,
     avatarUrl: row.avatar_url ?? '',
     totalTokens: Number(row.total_tokens),
     totalSessions: Number(row.total_sessions),
