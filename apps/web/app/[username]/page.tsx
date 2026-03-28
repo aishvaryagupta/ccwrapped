@@ -164,37 +164,44 @@ export default async function ProfilePage({ params }: Props) {
           label="Tokens"
           value={formatTokens(totalTokens)}
           icon={<Coins className="size-5" />}
+          tooltip="Total input + output tokens consumed across all Claude Code sessions"
         />
         <StatCard
           label="Sessions"
           value={String(totalSessions)}
           icon={<Hash className="size-5" />}
+          tooltip="Number of individual Claude Code conversations or sessions"
         />
         <StatCard
           label="Projects"
           value={String(totalProjects)}
           icon={<FolderOpen className="size-5" />}
+          tooltip="Number of distinct project directories where Claude Code was used"
         />
         <StatCard
           label="Cost (Today)"
           value={`$${dailyCost.toFixed(2)}`}
           icon={<DollarSign className="size-5" />}
+          tooltip="Estimated API cost for today based on token usage and model pricing"
         />
         <StatCard
           label="Cost (7 days)"
           value={`$${weeklyCost.toFixed(2)}`}
           icon={<DollarSign className="size-5" />}
+          tooltip="Estimated API cost over the last 7 days"
         />
         <StatCard
           label="Cost (30 days)"
           value={`$${monthlyCost.toFixed(2)}`}
           icon={<DollarSign className="size-5" />}
+          tooltip="Estimated API cost over the last 30 days"
         />
         {totalFilesTouched > 0 && (
           <StatCard
             label="Files Touched"
             value={formatTokens(totalFilesTouched)}
             icon={<FileCode className="size-5" />}
+            tooltip="Number of unique files read, written, or edited by Claude Code"
           />
         )}
         {totalLinesWritten > 0 && (
@@ -202,6 +209,7 @@ export default async function ProfilePage({ params }: Props) {
             label="Lines Written"
             value={formatTokens(totalLinesWritten)}
             icon={<PenLine className="size-5" />}
+            tooltip="Lines of code written or added via Write and Edit tool calls"
           />
         )}
       </div>
