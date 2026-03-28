@@ -14,7 +14,7 @@ export async function run(flags: string[]): Promise<void> {
     return;
   }
 
-  const url = `https://ccwrapped.dev/@${state.username}`;
+  const url = `https://ccwrapped.dev/${state.username}`;
 
   if (flags.includes('--copy')) {
     copyToClipboard(url);

@@ -168,7 +168,7 @@ export async function run(flags: string[]): Promise<void> {
 
   const currentState = readState();
   if (currentState.username) {
-    const url = `https://ccwrapped.dev/@${currentState.username}`;
+    const url = `https://ccwrapped.dev/${currentState.username}`;
     console.log();
     console.log(`View your profile: ${url}`);
     openUrl(url);

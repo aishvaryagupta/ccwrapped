@@ -141,7 +141,7 @@ export async function run(flags: string[]): Promise<void> {
   const currentState = readState();
   if (currentState.username) {
     console.log();
-    console.log(`View your profile: https://ccwrapped.dev/@${currentState.username}`);
+    console.log(`View your profile: https://ccwrapped.dev/${currentState.username}`);
   }
 }
 
