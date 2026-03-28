@@ -8,9 +8,33 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ccwrapped — Your Claude Code stats, visualized and shared',
+  title: {
+    default: 'ccwrapped — Your Claude Code stats, visualized and shared',
+    template: '%s — ccwrapped',
+  },
   description:
     'Track your Claude Code usage. Beautiful shareable cards, public profiles, and leaderboard rankings.',
+  metadataBase: new URL('https://ccwrapped.dev'),
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/apple-touch-icon.png',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://ccwrapped.dev',
+    siteName: 'ccwrapped',
+    title: 'ccwrapped — Your Claude Code stats, visualized and shared',
+    description:
+      'Track your Claude Code usage. Beautiful shareable cards, public profiles, and leaderboard rankings.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

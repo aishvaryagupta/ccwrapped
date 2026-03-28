@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Trophy, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -130,7 +131,7 @@ export default async function LeaderboardPage({ searchParams }: Props) {
                           className="flex items-center gap-3 hover:text-primary transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                         >
                           {entry.avatarUrl && (
-                            <img
+                            <Image
                               src={entry.avatarUrl}
                               alt=""
                               width={32}

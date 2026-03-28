@@ -115,7 +115,7 @@ export async function GET(
   const bg = theme === 'dark' ? '#0d1117' : '#ffffff';
   const fg = theme === 'dark' ? '#e6edf3' : '#1f2328';
   const dim = theme === 'dark' ? '#8b949e' : '#656d76';
-  const accent = theme === 'dark' ? '#7c3aed' : '#6d28d9';
+  const accent = theme === 'dark' ? '#da7756' : '#c4603e';
 
   return new ImageResponse(
     (

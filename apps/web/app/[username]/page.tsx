@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Coins, Hash, FolderOpen, DollarSign, Download, Link as LinkIcon, Calendar } from 'lucide-react';
+import { Coins, Hash, FolderOpen, DollarSign, Download, Link as LinkIcon, Calendar, FileCode, PenLine } from 'lucide-react';
 import { CopyButton } from '@/components/copy-button';
 import { Heatmap } from '@/components/heatmap';
 import { ModelChart } from '@/components/model-chart';
+import { ToolChart } from '@/components/tool-chart';
 import { StatCard } from '@/components/stat-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -46,7 +48,10 @@ export default async function ProfilePage({ params }: Props) {
   let totalSessions = 0;
   let totalProjects = 0;
   let totalCost = 0;
+  let totalFilesTouched = 0;
+  let totalLinesWritten = 0;
   const models = new Map<string, number>();
+  const toolAgg = new Map<string, number>();
 
   for (const day of stats) {
     totalInput += day.inputTokens;
@@ -54,10 +59,16 @@ export default async function ProfilePage({ params }: Props) {
     totalSessions += day.sessionCount;
     totalProjects += day.projectCount;
     totalCost += day.costUsd;
+    totalFilesTouched += day.filesTouched ?? 0;
+    totalLinesWritten += day.linesWritten ?? 0;
 
     for (const mb of day.modelBreakdowns) {
       const t = mb.inputTokens + mb.outputTokens;
       models.set(mb.modelName, (models.get(mb.modelName) ?? 0) + t);
+    }
+
+    for (const tu of (day.toolUsage ?? [])) {
+      toolAgg.set(tu.toolName, (toolAgg.get(tu.toolName) ?? 0) + tu.count);
     }
   }
 
@@ -70,6 +81,16 @@ export default async function ProfilePage({ params }: Props) {
       name,
       tokens,
       percentage: modelTotal > 0 ? Math.round((tokens / modelTotal) * 100) : 0,
+    }));
+
+  const toolTotal = [...toolAgg.values()].reduce((s, v) => s + v, 0);
+  const sortedTools = [...toolAgg.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([name, count]) => ({
+      name,
+      count,
+      percentage: toolTotal > 0 ? Math.round((count / toolTotal) * 100) : 0,
     }));
 
   // Build heatmap (last 90 days)
@@ -98,12 +119,13 @@ export default async function ProfilePage({ params }: Props) {
       {/* Header */}
       <header className="flex items-start sm:items-center gap-4 sm:gap-5 mb-10">
         {user.avatarUrl && (
-          <img
+          <Image
             src={user.avatarUrl}
             alt={`${user.username}'s avatar`}
             width={80}
             height={80}
             className="rounded-full border-2 border-border shadow-sm"
+            priority
           />
         )}
         <div className="flex-1 min-w-0">
@@ -121,7 +143,7 @@ export default async function ProfilePage({ params }: Props) {
       </header>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
         <StatCard
           label="Tokens"
           value={formatTokens(totalTokens)}
@@ -142,6 +164,20 @@ export default async function ProfilePage({ params }: Props) {
           value={`$${totalCost.toFixed(2)}`}
           icon={<DollarSign className="size-5" />}
         />
+        {totalFilesTouched > 0 && (
+          <StatCard
+            label="Files Touched"
+            value={formatTokens(totalFilesTouched)}
+            icon={<FileCode className="size-5" />}
+          />
+        )}
+        {totalLinesWritten > 0 && (
+          <StatCard
+            label="Lines Written"
+            value={formatTokens(totalLinesWritten)}
+            icon={<PenLine className="size-5" />}
+          />
+        )}
       </div>
 
       {/* Heatmap */}
@@ -149,11 +185,16 @@ export default async function ProfilePage({ params }: Props) {
         <Heatmap days={heatmapData} />
       </div>
 
-      {/* Two-column: Model breakdown + Daily trend */}
+      {/* Charts: Model breakdown + Tool usage + Daily trend */}
       <div className="grid sm:grid-cols-2 gap-4 mb-8">
         {/* Model breakdown */}
         {sortedModels.length > 0 && (
           <ModelChart models={sortedModels} />
+        )}
+
+        {/* Tool usage */}
+        {sortedTools.length > 0 && (
+          <ToolChart tools={sortedTools} />
         )}
 
         {/* Daily trend */}
