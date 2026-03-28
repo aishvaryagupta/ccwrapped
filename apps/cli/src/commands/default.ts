@@ -140,13 +140,13 @@ export async function run(flags: string[]): Promise<void> {
   const result = await postSyncPayload(API_BASE_URL, token, filtered);
 
   if (!result.ok) {
-    const messages: Record<string, string> = {
+    const fallback: Record<string, string> = {
       network: 'Could not reach ccwrapped.dev.',
       auth: 'Auth failed. Run "ccwrapped auth" to re-authenticate.',
       server: 'Server error. Try again later.',
       validation: 'Invalid payload.',
     };
-    console.log(red(messages[result.error] ?? 'Sync failed.'));
+    console.log(red(result.message ?? fallback[result.error] ?? 'Sync failed.'));
     process.exitCode = 1;
     return;
   }

@@ -21,8 +21,14 @@ export async function postSyncPayload(
       return { ok: false, error: 'auth', message: 'Invalid or expired token' };
     }
 
+    if (res.status === 429) {
+      const retryAfter = res.headers.get('Retry-After');
+      return { ok: false, error: 'server', message: `Rate limited. Try again in ${retryAfter ?? '60'} minutes.` };
+    }
+
     if (!res.ok) {
-      return { ok: false, error: 'server', message: `HTTP ${res.status}` };
+      const body = (await res.json().catch(() => ({}))) as { message?: string };
+      return { ok: false, error: 'server', message: body.message ?? `HTTP ${res.status}` };
     }
 
     const data = (await res.json()) as { profile_url: string };
