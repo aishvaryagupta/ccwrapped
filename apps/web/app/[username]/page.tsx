@@ -18,7 +18,8 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { username } = await params;
+  const { username: rawUsername } = await params;
+  const username = rawUsername.replace(/^@/, '');
   return {
     title: `@${username} — ccwrapped`,
     description: `Claude Code usage stats for @${username}`,
@@ -36,7 +37,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProfilePage({ params }: Props) {
-  const { username } = await params;
+  const { username: rawUsername } = await params;
+  const username = rawUsername.replace(/^@/, '');
   const user = await fetchUserProfile(username);
   if (!user) notFound();
 
