@@ -13,8 +13,8 @@ export const DEFAULT_CONFIG_PATHS = [
 ];
 
 // Sanity caps (server-side validation mirrors these)
-export const MAX_TOTAL_TOKENS_PER_DAY = 15_000_000;
-export const MAX_COST_USD_PER_DAY = 50;
+export const MAX_TOTAL_TOKENS_PER_DAY = 500_000_000;
+export const MAX_COST_USD_PER_DAY = 500;
 export const MIN_COST_USD_PER_DAY = 0;
 export const MAX_BACKFILL_DAYS = 30;
 

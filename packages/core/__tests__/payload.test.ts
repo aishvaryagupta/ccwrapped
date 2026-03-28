@@ -305,7 +305,7 @@ describe('filterDaysForSync', () => {
       days: [
         {
           date: '2026-03-25',
-          inputTokens: 16_000_000,
+          inputTokens: 501_000_000,
           outputTokens: 0,
           cacheCreationTokens: 0,
           cacheReadTokens: 0,
@@ -332,7 +332,7 @@ describe('filterDaysForSync', () => {
           outputTokens: 50,
           cacheCreationTokens: 0,
           cacheReadTokens: 0,
-          costUSD: 55,
+          costUSD: 550,
           sessionCount: 1,
           projectCount: 1,
           modelBreakdowns: [],

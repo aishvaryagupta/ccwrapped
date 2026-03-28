@@ -51,10 +51,10 @@ describe('validateSyncPayload', () => {
     }
   });
 
-  it('rejects day with tokens exceeding 15M', () => {
+  it('rejects day with tokens exceeding 500M', () => {
     const result = validateSyncPayload({
       ...validPayload,
-      days: [{ ...validPayload.days[0], inputTokens: 16_000_000 }],
+      days: [{ ...validPayload.days[0], inputTokens: 501_000_000 }],
     });
     expect(result.valid).toBe(false);
     if (!result.valid) {
@@ -62,10 +62,10 @@ describe('validateSyncPayload', () => {
     }
   });
 
-  it('rejects day with cost > $50', () => {
+  it('rejects day with cost > $500', () => {
     const result = validateSyncPayload({
       ...validPayload,
-      days: [{ ...validPayload.days[0], costUSD: 55 }],
+      days: [{ ...validPayload.days[0], costUSD: 550 }],
     });
     expect(result.valid).toBe(false);
   });
