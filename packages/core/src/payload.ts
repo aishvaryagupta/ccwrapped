@@ -99,6 +99,9 @@ export function buildSyncPayload(
       string,
       { input: number; output: number; cacheCreation: number; cacheRead: number }
     >();
+    const dayToolCounts = new Map<string, number>();
+    const dayFiles = new Set<string>();
+    let dayLinesWritten = 0;
 
     for (const entry of dayEntries) {
       inputTokens += entry.usage.inputTokens;
@@ -130,6 +133,18 @@ export function buildSyncPayload(
             cacheRead: entry.usage.cacheReadInputTokens,
           });
         }
+      }
+
+      if (entry.toolCounts) {
+        for (const [tool, count] of Object.entries(entry.toolCounts)) {
+          dayToolCounts.set(tool, (dayToolCounts.get(tool) ?? 0) + count);
+        }
+      }
+      if (entry.filesTouched) {
+        for (const fp of entry.filesTouched) dayFiles.add(fp);
+      }
+      if (entry.linesWritten != null) {
+        dayLinesWritten += entry.linesWritten;
       }
     }
 
@@ -164,6 +179,13 @@ export function buildSyncPayload(
       sessionCount: sessions.size + unknownSessionCount,
       projectCount: projects.size,
       modelBreakdowns,
+      ...(dayToolCounts.size > 0 && {
+        toolCounts: [...dayToolCounts.entries()]
+          .map(([toolName, count]) => ({ toolName, count }))
+          .sort((a, b) => b.count - a.count),
+      }),
+      ...(dayFiles.size > 0 && { filesTouched: dayFiles.size }),
+      ...(dayLinesWritten > 0 && { linesWritten: dayLinesWritten }),
     });
   }
 

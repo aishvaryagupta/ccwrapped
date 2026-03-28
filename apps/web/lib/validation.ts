@@ -4,7 +4,6 @@ import {
   MAX_COST_USD_PER_DAY,
   MAX_TOTAL_TOKENS_PER_DAY,
   MIN_COST_USD_PER_DAY,
-  SCHEMA_VERSION,
   SyncPayloadSchema,
   type SyncPayload,
 } from '@ccwrapped/core';
@@ -21,7 +20,8 @@ export function validateSyncPayload(body: unknown): ValidationResult {
 
   const payload = result.output;
 
-  if (payload.schema_version !== SCHEMA_VERSION) {
+  const SUPPORTED_VERSIONS = [1, 2];
+  if (!SUPPORTED_VERSIONS.includes(payload.schema_version)) {
     return { valid: false, error: `Unsupported schema version: ${payload.schema_version}` };
   }
 

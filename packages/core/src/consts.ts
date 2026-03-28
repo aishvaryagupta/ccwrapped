@@ -19,7 +19,7 @@ export const MIN_COST_USD_PER_DAY = 0;
 export const MAX_BACKFILL_DAYS = 30;
 
 // Payload
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 export const CLIENT_VERSION = '0.1.0';
 
 // ccwrapped state

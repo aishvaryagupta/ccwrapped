@@ -14,6 +14,7 @@ import {
   DailyDateSchema,
   type ParsedEntry,
   type ScanOptions,
+  type UsageEntry,
   UsageEntrySchema,
 } from './types.js';
 
@@ -78,6 +79,46 @@ function extractDateUTC(isoTimestamp: string): DailyDate | null {
 }
 
 // ---------------------------------------------------------------------------
+// Tool metrics extraction
+// ---------------------------------------------------------------------------
+
+const FILE_PATH_TOOLS = new Set(['Read', 'Write', 'Edit']);
+
+function extractToolMetrics(
+  content: UsageEntry['message']['content'],
+): { toolCounts: Record<string, number>; filesTouched: string[]; linesWritten: number } | null {
+  if (!content || content.length === 0) return null;
+
+  const toolCounts: Record<string, number> = {};
+  const files = new Set<string>();
+  let linesWritten = 0;
+
+  for (const block of content) {
+    if (block.type !== 'tool_use' || !block.name) continue;
+
+    toolCounts[block.name] = (toolCounts[block.name] ?? 0) + 1;
+
+    if (FILE_PATH_TOOLS.has(block.name) && block.input?.file_path) {
+      files.add(block.input.file_path);
+    }
+
+    if (block.name === 'Write' && block.input?.content) {
+      linesWritten += block.input.content.split('\n').length;
+    }
+
+    if (block.name === 'Edit' && block.input?.new_string) {
+      const newLines = block.input.new_string.split('\n').length;
+      const oldLines = block.input.old_string?.split('\n').length ?? 0;
+      linesWritten += Math.max(0, newLines - oldLines);
+    }
+  }
+
+  if (Object.keys(toolCounts).length === 0) return null;
+
+  return { toolCounts, filesTouched: [...files], linesWritten };
+}
+
+// ---------------------------------------------------------------------------
 // Single-file parser (plugin hook path)
 // ---------------------------------------------------------------------------
 
@@ -116,6 +157,7 @@ export async function parseTranscriptFile(
     if (!date) continue;
 
     const usage = entry.message.usage;
+    const toolMetrics = extractToolMetrics(entry.message.content);
 
     entries.push({
       timestamp: new Date(entry.timestamp),
@@ -130,6 +172,9 @@ export async function parseTranscriptFile(
         cacheReadInputTokens: usage.cache_read_input_tokens ?? 0,
       },
       dedupeKey,
+      toolCounts: toolMetrics?.toolCounts ?? null,
+      filesTouched: toolMetrics?.filesTouched ?? null,
+      linesWritten: toolMetrics?.linesWritten ?? null,
     });
   }
 

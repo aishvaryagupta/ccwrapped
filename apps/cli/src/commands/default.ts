@@ -1,13 +1,185 @@
+import * as readline from 'node:readline/promises';
 import {
+  API_BASE_URL,
+  CLIENT_VERSION,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
   buildMachineId,
   buildSyncPayload,
+  claimUsername,
   fetchLivePricing,
+  fetchSyncMetadata,
+  filterDaysForSync,
+  getValidToken,
+  pollForToken,
+  postSyncPayload,
+  readState,
   scanAllFiles,
+  setAuthToken,
+  setUsername,
+  startDeviceFlow,
+  validateUsername,
+  writeState,
   type DaySummary,
 } from '@ccwrapped/core';
-import { bold, dim, formatCost, formatTokens, printTable } from '../ui.js';
+import { openUrl } from '../browser.js';
+import { bold, dim, formatCost, formatTokens, green, red, yellow, printTable } from '../ui.js';
 
-export async function run(_flags: string[]): Promise<void> {
+export async function run(flags: string[]): Promise<void> {
+  if (flags.includes('--local')) {
+    return showLocalStats();
+  }
+
+  // 1. Auth
+  let token = await getValidToken(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
+  if (!token) {
+    console.log(bold('ccwrapped') + dim(' — setup'));
+    console.log();
+
+    if (!GOOGLE_CLIENT_ID) {
+      console.log(yellow('Authentication is not yet configured.'));
+      return;
+    }
+
+    const deviceCode = await startDeviceFlow(GOOGLE_CLIENT_ID);
+    if (!deviceCode) {
+      console.log(red('Failed to start authentication. Check your network.'));
+      process.exitCode = 1;
+      return;
+    }
+
+    console.log(`! First, copy your one-time code: ${bold(deviceCode.user_code)}`);
+    console.log();
+    console.log(`Opening ${deviceCode.verification_url} ...`);
+    openUrl(deviceCode.verification_url);
+    console.log();
+    console.log('Waiting for authorization...');
+
+    const result = await pollForToken(
+      GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET,
+      deviceCode.device_code,
+      deviceCode.interval,
+    );
+
+    if (!result.ok) {
+      const messages: Record<string, string> = {
+        expired: 'Code expired. Run again.',
+        denied: 'Authorization denied.',
+        network: 'Network error during authorization.',
+        not_configured: 'Auth not configured.',
+      };
+      console.log(red(messages[result.error] ?? 'Unknown error.'));
+      process.exitCode = 1;
+      return;
+    }
+
+    setAuthToken(result.token, result.refreshToken, result.expiresIn);
+    token = result.token;
+    console.log(green(`Authenticated as ${result.email}`));
+    console.log();
+  }
+
+  // 2. Username
+  const state = readState();
+  if (!state.username) {
+    const claimed = await promptForUsername(token);
+    if (!claimed) {
+      process.exitCode = 1;
+      return;
+    }
+    setUsername(claimed);
+    console.log(green(`Username set: @${claimed}`));
+    console.log();
+  }
+
+  // 3. Scan
+  console.log('Scanning Claude Code logs...');
+  const entries = await scanAllFiles();
+
+  if (entries.length === 0) {
+    console.log(yellow('No usage data found.'));
+    console.log(dim('Checked ~/.config/claude/projects/ and ~/.claude/projects/'));
+    return;
+  }
+
+  // 4. Build + filter
+  const machineId = state.machine_id || buildMachineId();
+  const payload = buildSyncPayload(entries, machineId, CLIENT_VERSION);
+  const { payload: filtered, filtered: dropped } = filterDaysForSync(payload);
+
+  if (dropped.length > 0) {
+    console.log(yellow(`Filtered ${dropped.length} day(s):`));
+    for (const d of dropped) {
+      console.log(`  ${d.date}: ${d.reason}`);
+    }
+    console.log();
+  }
+
+  if (filtered.days.length === 0) {
+    console.log('No days to sync after filtering.');
+    return;
+  }
+
+  // 5. Conflict detection
+  const todayDate = new Date().toISOString().slice(0, 10);
+  const metadata = await fetchSyncMetadata(API_BASE_URL, token, todayDate);
+  if (metadata.ok && metadata.data.machine_id && metadata.data.machine_id !== machineId) {
+    console.log(yellow('Warning: Last sync was from a different machine.'));
+    console.log(dim(`  Last: ${metadata.data.machine_id}  This: ${machineId}`));
+    console.log();
+  }
+
+  // 6. Upload
+  const totalTokens = filtered.days.reduce(
+    (s, d) => s + d.inputTokens + d.outputTokens, 0,
+  );
+  const totalCost = filtered.days.reduce((s, d) => s + d.costUSD, 0);
+
+  console.log(`Syncing ${filtered.days.length} day(s)...`);
+  const result = await postSyncPayload(API_BASE_URL, token, filtered);
+
+  if (!result.ok) {
+    const messages: Record<string, string> = {
+      network: 'Could not reach ccwrapped.dev.',
+      auth: 'Auth failed. Run "ccwrapped auth" to re-authenticate.',
+      server: 'Server error. Try again later.',
+      validation: 'Invalid payload.',
+    };
+    console.log(red(messages[result.error] ?? 'Sync failed.'));
+    process.exitCode = 1;
+    return;
+  }
+
+  // Mark sessions as synced
+  const sessionIds = [...new Set(entries.map((e) => e.sessionId).filter(Boolean))] as string[];
+  const updatedState = readState();
+  const existing = new Set(updatedState.synced_sessions);
+  for (const sid of sessionIds) {
+    if (!existing.has(sid)) updatedState.synced_sessions.push(sid);
+  }
+  updatedState.last_sync = new Date().toISOString();
+  writeState(updatedState);
+
+  // 7. Done
+  console.log();
+  console.log(green(`Synced ${filtered.days.length} day(s)`));
+  console.log(`  ${formatTokens(totalTokens)} tokens  ${formatCost(totalCost)}`);
+
+  const currentState = readState();
+  if (currentState.username) {
+    const url = `https://ccwrapped.dev/@${currentState.username}`;
+    console.log();
+    console.log(`View your profile: ${url}`);
+    openUrl(url);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Local stats (--local flag, old default behavior)
+// ---------------------------------------------------------------------------
+
+async function showLocalStats(): Promise<void> {
   const entries = await scanAllFiles();
 
   if (entries.length === 0) {
@@ -16,7 +188,6 @@ export async function run(_flags: string[]): Promise<void> {
     console.log('  No Claude Code usage data found.');
     console.log();
     console.log(dim('  Checked ~/.config/claude/projects/ and ~/.claude/projects/'));
-    console.log(dim('  If you use Claude Code, logs are created automatically.'));
     return;
   }
 
@@ -34,7 +205,6 @@ export async function run(_flags: string[]): Promise<void> {
   console.log(bold('ccwrapped') + dim(' — Your Claude Code Stats'));
   console.log();
 
-  // Today / this week / all time
   const today = new Date().toISOString().slice(0, 10);
   const weekAgo = new Date(Date.now() - 7 * 86400_000).toISOString().slice(0, 10);
 
@@ -43,17 +213,9 @@ export async function run(_flags: string[]): Promise<void> {
 
   const summaryRows: string[][] = [];
 
-  if (todayDay) {
-    summaryRows.push(makeSummaryRow('Today', todayDay));
-  }
-
-  if (weekDays.length > 0) {
-    summaryRows.push(makeSummaryRow('Last 7 days', aggregate(weekDays)));
-  }
-
-  if (days.length > 0) {
-    summaryRows.push(makeSummaryRow('All time', aggregate(days)));
-  }
+  if (todayDay) summaryRows.push(makeSummaryRow('Today', todayDay));
+  if (weekDays.length > 0) summaryRows.push(makeSummaryRow('Last 7 days', aggregate(weekDays)));
+  if (days.length > 0) summaryRows.push(makeSummaryRow('All time', aggregate(days)));
 
   printTable(
     ['Period', 'Input', 'Output', 'Cache Create', 'Cache Read', 'Total', 'Cost'],
@@ -61,7 +223,6 @@ export async function run(_flags: string[]): Promise<void> {
     [14, 10, 10, 14, 14, 10, 8],
   );
 
-  // Model breakdown
   const allModels = new Map<string, number>();
   for (const day of days) {
     for (const mb of day.modelBreakdowns) {
@@ -81,8 +242,7 @@ export async function run(_flags: string[]): Promise<void> {
   }
 
   console.log();
-  console.log(dim('Sync your stats: ccwrapped sync'));
-  console.log(dim('Install the plugin for auto-sync: /plugin install ccwrapped'));
+  console.log(dim('Sync your stats: npx ccwrapdev'));
 }
 
 function makeSummaryRow(label: string, day: DaySummary): string[] {
@@ -124,4 +284,48 @@ function aggregate(days: DaySummary[]): DaySummary {
     projectCount: days.reduce((s, d) => s + d.projectCount, 0),
     modelBreakdowns: [],
   };
+}
+
+async function promptForUsername(token: string): Promise<string | null> {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const MAX_ATTEMPTS = 3;
+
+  try {
+    console.log(bold('Pick a username for your profile'));
+    console.log(dim('3-30 characters, letters, numbers, and hyphens.'));
+    console.log();
+
+    let attempts = 0;
+    while (attempts < MAX_ATTEMPTS) {
+      let input: string;
+      try {
+        input = await rl.question('Username: ');
+      } catch {
+        return null;
+      }
+
+      if (!input.trim()) {
+        console.log(dim('Username cannot be empty.'));
+        continue;
+      }
+
+      attempts++;
+
+      const validation = validateUsername(input);
+      if (!validation.valid) {
+        console.log(red(validation.reason));
+        continue;
+      }
+
+      const result = await claimUsername(API_BASE_URL, token, validation.normalized);
+      if (result.ok) return result.data.username;
+
+      console.log(red(result.message ?? 'Could not claim username.'));
+    }
+
+    console.log(red('Too many attempts. Run again to try.'));
+    return null;
+  } finally {
+    rl.close();
+  }
 }

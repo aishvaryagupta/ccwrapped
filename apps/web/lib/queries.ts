@@ -33,6 +33,9 @@ export interface DayStats {
     cacheCreationTokens: number;
     cacheReadTokens: number;
   }>;
+  toolUsage: Array<{ toolName: string; count: number }> | null;
+  filesTouched: number | null;
+  linesWritten: number | null;
 }
 
 export async function fetchUserProfile(
@@ -76,6 +79,9 @@ export async function fetchUserStats(userId: string): Promise<DayStats[]> {
     sessionCount: row.session_count ?? 0,
     projectCount: row.project_count ?? 0,
     modelBreakdowns: (row.model_breakdowns ?? []) as DayStats['modelBreakdowns'],
+    toolUsage: (row.tool_usage ?? null) as DayStats['toolUsage'],
+    filesTouched: row.files_touched ?? null,
+    linesWritten: row.lines_written ?? null,
   }));
 }
 

@@ -61,6 +61,9 @@ export async function POST(request: Request) {
     session_count: day.sessionCount,
     project_count: day.projectCount,
     model_breakdowns: day.modelBreakdowns,
+    tool_usage: ('toolCounts' in day ? day.toolCounts : null) ?? null,
+    files_touched: ('filesTouched' in day ? day.filesTouched : null) ?? null,
+    lines_written: ('linesWritten' in day ? day.linesWritten : null) ?? null,
     machine_id: payload.machine_id,
     synced_at: new Date().toISOString(),
   }));

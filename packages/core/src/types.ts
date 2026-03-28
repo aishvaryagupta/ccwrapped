@@ -38,6 +38,19 @@ export type SessionId = InferOutput<typeof SessionIdSchema>;
 // Raw JSONL entry schema (Claude Code assistant messages with usage)
 // ---------------------------------------------------------------------------
 
+export const ContentBlockSchema = object({
+  type: string(),
+  name: optional(string()),
+  input: optional(
+    object({
+      file_path: optional(string()),
+      content: optional(string()),
+      old_string: optional(string()),
+      new_string: optional(string()),
+    }),
+  ),
+});
+
 export const UsageEntrySchema = object({
   sessionId: optional(string()),
   timestamp: pipe(string(), minLength(10)),
@@ -45,6 +58,7 @@ export const UsageEntrySchema = object({
   message: object({
     id: optional(string()),
     model: optional(string()),
+    content: optional(array(ContentBlockSchema)),
     usage: object({
       input_tokens: number(),
       output_tokens: number(),
@@ -72,6 +86,9 @@ export interface ParsedEntry {
     cacheReadInputTokens: number;
   };
   dedupeKey: string | null;
+  toolCounts: Record<string, number> | null;
+  filesTouched: string[] | null;
+  linesWritten: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -87,6 +104,12 @@ export const ModelBreakdownSchema = object({
 });
 export type ModelBreakdown = InferOutput<typeof ModelBreakdownSchema>;
 
+export const ToolCountSchema = object({
+  toolName: string(),
+  count: pipe(number(), integer(), minValue(0)),
+});
+export type ToolCount = InferOutput<typeof ToolCountSchema>;
+
 export const DaySummarySchema = object({
   date: pipe(string(), regex(/^\d{4}-\d{2}-\d{2}$/)),
   inputTokens: pipe(number(), integer(), minValue(0)),
@@ -97,6 +120,9 @@ export const DaySummarySchema = object({
   sessionCount: pipe(number(), integer(), minValue(0)),
   projectCount: pipe(number(), integer(), minValue(0)),
   modelBreakdowns: array(ModelBreakdownSchema),
+  toolCounts: optional(array(ToolCountSchema)),
+  filesTouched: optional(pipe(number(), integer(), minValue(0))),
+  linesWritten: optional(pipe(number(), integer(), minValue(0))),
 });
 export type DaySummary = InferOutput<typeof DaySummarySchema>;
 

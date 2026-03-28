@@ -195,7 +195,7 @@ describe('buildSyncPayload', () => {
   it('produces empty days array for empty input', () => {
     const payload = buildSyncPayload([], 'machine-1', '0.1.0');
     expect(payload.days).toHaveLength(0);
-    expect(payload.schema_version).toBe(1);
+    expect(payload.schema_version).toBe(2);
     expect(payload.client_version).toBe('0.1.0');
     expect(payload.machine_id).toBe('machine-1');
   });
