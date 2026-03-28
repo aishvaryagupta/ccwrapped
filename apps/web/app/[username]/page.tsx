@@ -95,8 +95,22 @@ export default async function ProfilePage({ params }: Props) {
       percentage: toolTotal > 0 ? Math.round((count / toolTotal) * 100) : 0,
     }));
 
-  // Build heatmap (last 90 days)
+  // Cost breakdown by period
   const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  const weekAgoStr = new Date(now.getTime() - 7 * 86400_000).toISOString().slice(0, 10);
+  const monthAgoStr = new Date(now.getTime() - 30 * 86400_000).toISOString().slice(0, 10);
+
+  let dailyCost = 0;
+  let weeklyCost = 0;
+  let monthlyCost = 0;
+  for (const day of stats) {
+    if (day.date === todayStr) dailyCost += day.costUsd;
+    if (day.date >= weekAgoStr) weeklyCost += day.costUsd;
+    if (day.date >= monthAgoStr) monthlyCost += day.costUsd;
+  }
+
+  // Build heatmap (last 90 days)
   const daysByDate = new Map(stats.map((d) => [d.date, d]));
   const heatmapData = Array.from({ length: 90 }, (_, i) => {
     const date = new Date(now.getTime() - (89 - i) * 86400_000)
@@ -162,8 +176,18 @@ export default async function ProfilePage({ params }: Props) {
           icon={<FolderOpen className="size-5" />}
         />
         <StatCard
-          label="Cost"
-          value={`$${totalCost.toFixed(2)}`}
+          label="Cost (Today)"
+          value={`$${dailyCost.toFixed(2)}`}
+          icon={<DollarSign className="size-5" />}
+        />
+        <StatCard
+          label="Cost (7 days)"
+          value={`$${weeklyCost.toFixed(2)}`}
+          icon={<DollarSign className="size-5" />}
+        />
+        <StatCard
+          label="Cost (30 days)"
+          value={`$${monthlyCost.toFixed(2)}`}
           icon={<DollarSign className="size-5" />}
         />
         {totalFilesTouched > 0 && (
