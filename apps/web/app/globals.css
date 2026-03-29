@@ -2,10 +2,11 @@
 
 /*
  * Design tokens — shadcn/ui + Tailwind 4.
- * Zinc base + Claude terracotta (#da7756) accent.
- * Light/dark mode via next-themes (class strategy).
+ * "The Monospace Web" aesthetic: JetBrains Mono, black/white,
+ * square corners, 2px solid borders, no shadows, no gradients.
+ * Claude terracotta (#da7756) kept as subtle accent.
  *
- * @theme inline → values reference CSS vars that swap on .dark class.
+ * @theme inline -> values reference CSS vars that swap on .dark class.
  */
 
 /* ============================================================
@@ -13,48 +14,51 @@
  * ============================================================ */
 
 :root {
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.09 0.005 286);
+  --background: #ffffff;
+  --foreground: #000000;
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.09 0.005 286);
+  --card: #ffffff;
+  --card-foreground: #000000;
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.09 0.005 286);
+  --popover: #ffffff;
+  --popover-foreground: #000000;
 
-  --primary: oklch(0.62 0.14 46);
-  --primary-foreground: oklch(1 0 0);
+  --primary: #da7756;
+  --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.94 0.005 286);
-  --secondary-foreground: oklch(0.15 0.005 286);
+  --secondary: #eeeeee;
+  --secondary-foreground: #000000;
 
-  --muted: oklch(0.94 0.005 286);
-  --muted-foreground: oklch(0.45 0.01 286);
+  --muted: #eeeeee;
+  --muted-foreground: #666666;
 
-  --accent: oklch(0.94 0.005 286);
-  --accent-foreground: oklch(0.15 0.005 286);
+  --accent: #eeeeee;
+  --accent-foreground: #000000;
 
-  --destructive: oklch(0.55 0.22 29);
-  --destructive-foreground: oklch(1 0 0);
+  --destructive: #c0392b;
+  --destructive-foreground: #ffffff;
 
-  --border: oklch(0.90 0.005 286);
-  --input: oklch(0.90 0.005 286);
-  --ring: oklch(0.62 0.14 46);
+  --border: #000000;
+  --input: #000000;
+  --ring: #da7756;
 
-  --chart-1: oklch(0.62 0.14 46);
-  --chart-2: oklch(0.55 0.12 260);
-  --chart-3: oklch(0.50 0.15 310);
-  --chart-4: oklch(0.58 0.10 200);
-  --chart-5: oklch(0.62 0.08 140);
+  --chart-1: #da7756;
+  --chart-2: #000000;
+  --chart-3: #666666;
+  --chart-4: #999999;
+  --chart-5: #cccccc;
 
-  --sidebar: oklch(0.97 0.005 286);
-  --sidebar-foreground: oklch(0.09 0.005 286);
-  --sidebar-primary: oklch(0.62 0.14 46);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.94 0.005 286);
-  --sidebar-accent-foreground: oklch(0.15 0.005 286);
-  --sidebar-border: oklch(0.90 0.005 286);
-  --sidebar-ring: oklch(0.62 0.14 46);
+  --sidebar: #ffffff;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #da7756;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eeeeee;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #000000;
+  --sidebar-ring: #da7756;
+
+  --line-height: 1.20rem;
+  --border-thickness: 2px;
 }
 
 /* ============================================================
@@ -62,48 +66,48 @@
  * ============================================================ */
 
 .dark {
-  --background: oklch(0.07 0.005 286);
-  --foreground: oklch(0.985 0 0);
+  --background: #000000;
+  --foreground: #ffffff;
 
-  --card: oklch(0.14 0.005 286);
-  --card-foreground: oklch(0.985 0 0);
+  --card: #111111;
+  --card-foreground: #ffffff;
 
-  --popover: oklch(0.14 0.005 286);
-  --popover-foreground: oklch(0.985 0 0);
+  --popover: #111111;
+  --popover-foreground: #ffffff;
 
-  --primary: oklch(0.68 0.13 46);
-  --primary-foreground: oklch(1 0 0);
+  --primary: #e08b6d;
+  --primary-foreground: #000000;
 
-  --secondary: oklch(0.22 0.005 286);
-  --secondary-foreground: oklch(0.985 0 0);
+  --secondary: #111111;
+  --secondary-foreground: #ffffff;
 
-  --muted: oklch(0.22 0.005 286);
-  --muted-foreground: oklch(0.61 0.01 286);
+  --muted: #111111;
+  --muted-foreground: #aaaaaa;
 
-  --accent: oklch(0.22 0.005 286);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent: #111111;
+  --accent-foreground: #ffffff;
 
-  --destructive: oklch(0.65 0.2 25);
-  --destructive-foreground: oklch(0.985 0 0);
+  --destructive: #e74c3c;
+  --destructive-foreground: #ffffff;
 
-  --border: oklch(0.22 0.005 286);
-  --input: oklch(0.22 0.005 286);
-  --ring: oklch(0.68 0.13 46);
+  --border: #ffffff;
+  --input: #ffffff;
+  --ring: #e08b6d;
 
-  --chart-1: oklch(0.68 0.13 46);
-  --chart-2: oklch(0.60 0.12 260);
-  --chart-3: oklch(0.55 0.15 310);
-  --chart-4: oklch(0.65 0.10 200);
-  --chart-5: oklch(0.70 0.08 140);
+  --chart-1: #e08b6d;
+  --chart-2: #ffffff;
+  --chart-3: #aaaaaa;
+  --chart-4: #777777;
+  --chart-5: #444444;
 
-  --sidebar: oklch(0.14 0.005 286);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.68 0.13 46);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.22 0.005 286);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.22 0.005 286);
-  --sidebar-ring: oklch(0.68 0.13 46);
+  --sidebar: #000000;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #e08b6d;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #111111;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #ffffff;
+  --sidebar-ring: #e08b6d;
 }
 
 /* ============================================================
@@ -154,25 +158,14 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
 
-  --animate-fade-in: fade-in 0.4s var(--ease-out) both;
-  --animate-slide-up: slide-up 0.4s var(--ease-out) both;
-  --animate-scale-in: scale-in 0.25s var(--ease-out) both;
-  --animate-bar-fill: bar-fill 0.6s var(--ease-out) both;
-}
-
-/* ============================================================
- * Custom easing curves (Emil Kowalski)
- * ============================================================ */
-
-:root {
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-fade-in: fade-in 0.2s ease-out both;
+  --animate-slide-up: slide-up 0.2s ease-out both;
+  --animate-scale-in: scale-in 0.15s ease-out both;
 }
 
 /* ============================================================
@@ -191,6 +184,9 @@ html {
 @layer base {
   body {
     @apply bg-background text-foreground;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-optical-sizing: auto;
+    line-height: var(--line-height);
   }
 }
 
@@ -199,23 +195,18 @@ html {
  * ============================================================ */
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.96); }
+  from { opacity: 0; transform: scale(0.98); }
   to   { opacity: 1; transform: scale(1); }
-}
-
-@keyframes bar-fill {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
 }
 
 @keyframes skeleton-wave {
@@ -228,11 +219,11 @@ html {
  * ============================================================ */
 
 .animate-fade-in {
-  animation: fade-in 0.4s var(--ease-out) both;
+  animation: fade-in 0.2s ease-out both;
 }
 
 .animate-slide-up {
-  animation: slide-up 0.4s var(--ease-out) both;
+  animation: slide-up 0.2s ease-out both;
 }
 
 .animation-delay-50  { animation-delay: 50ms; }
@@ -244,111 +235,44 @@ html {
 .animation-delay-400 { animation-delay: 400ms; }
 
 /* ============================================================
- * Interactive card surfaces
+ * Monospace button press (translate instead of scale)
  * ============================================================ */
-
-@media (hover: hover) and (pointer: fine) {
-  .card-interactive {
-    transition:
-      transform 200ms var(--ease-out),
-      box-shadow 200ms var(--ease-out),
-      border-color 200ms var(--ease-out);
-  }
-
-  .card-interactive:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 8px 24px -4px oklch(0 0 0 / 0.15),
-      0 0 0 1px var(--primary) / 0.08;
-    border-color: oklch(from var(--primary) l c h / 0.15);
-  }
-
-  .card-interactive:active {
-    transform: translateY(0);
-    transition-duration: 80ms;
-  }
-}
-
-/* ============================================================
- * Button press
- * ============================================================ */
-
-button:not(:disabled),
-[role="button"]:not(:disabled) {
-  transition: transform 160ms var(--ease-out);
-}
 
 button:active:not(:disabled),
 [role="button"]:active:not(:disabled) {
-  transform: scale(0.97);
+  transform: translate(2px, 2px);
 }
 
 /* ============================================================
- * Stat card value emphasis on hover
+ * Monospace link style
  * ============================================================ */
 
-.stat-value {
-  transition: color 200ms var(--ease-out);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .card-interactive:hover .stat-value {
-    color: var(--primary);
-  }
+a {
+  text-decoration-thickness: var(--border-thickness);
 }
 
 /* ============================================================
- * Heatmap cell hover
+ * Monospace HR (double line)
  * ============================================================ */
 
-@media (hover: hover) and (pointer: fine) {
-  .heatmap-cell {
-    transition: transform 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
-  }
-
-  .heatmap-cell:hover {
-    transform: scale(1.3);
-    z-index: 10;
-    box-shadow: 0 0 6px 1px oklch(from var(--primary) l c h / 0.2);
-    position: relative;
-  }
+hr {
+  position: relative;
+  display: block;
+  height: var(--line-height);
+  margin: calc(var(--line-height) * 1.5) 0;
+  border: none;
+  color: var(--foreground);
 }
 
-/* ============================================================
- * Model chart bar fill
- * ============================================================ */
-
-.bar-fill {
-  animation: bar-fill 0.6s var(--ease-out) both;
-  transform-origin: left;
-}
-
-/* ============================================================
- * Nav link underline
- * ============================================================ */
-
-@media (hover: hover) and (pointer: fine) {
-  .nav-link-underline {
-    position: relative;
-  }
-
-  .nav-link-underline::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 50%;
-    width: 0;
-    height: 2px;
-    background-color: var(--primary);
-    border-radius: 1px;
-    transition: width 200ms var(--ease-out), left 200ms var(--ease-out);
-  }
-
-  .nav-link-underline:hover::after,
-  .nav-link-underline[aria-current="page"]::after {
-    width: 100%;
-    left: 0;
-  }
+hr::after {
+  display: block;
+  content: "";
+  position: absolute;
+  top: calc(var(--line-height) / 2 - var(--border-thickness));
+  left: 0;
+  width: 100%;
+  border-top: calc(var(--border-thickness) * 3) double var(--foreground);
+  height: 0;
 }
 
 /* ============================================================
@@ -382,10 +306,8 @@ button:active:not(:disabled),
     transform: none;
   }
 
-  .card-interactive { transition: none; }
-  .heatmap-cell { transition: none; }
-  .bar-fill { animation: none; transform: scaleX(1); }
   button:not(:disabled),
-  [role="button"]:not(:disabled) { transition: none; }
-  .nav-link-underline::after { transition: none; }
+  [role="button"]:not(:disabled) {
+    transition: none;
+  }
 }

@@ -127,7 +127,7 @@ export async function getValidToken(
   // Token still valid (with 60s buffer)
   if (state.token_expiry) {
     const expiryMs = new Date(state.token_expiry).getTime();
-    if (Date.now() < expiryMs - 60_000) {
+    if (!Number.isNaN(expiryMs) && Date.now() < expiryMs - 60_000) {
       return state.auth_token;
     }
   }

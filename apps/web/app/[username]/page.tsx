@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Coins, Hash, FolderOpen, DollarSign, Download, Link as LinkIcon, Calendar, FileCode, PenLine } from 'lucide-react';
+import { Coins, Hash, FolderOpen, DollarSign, Download, Calendar, FileCode, PenLine } from 'lucide-react';
 import { CopyButton } from '@/components/copy-button';
 import { Heatmap } from '@/components/heatmap';
 import { ModelChart } from '@/components/model-chart';
@@ -9,6 +9,8 @@ import { ToolChart } from '@/components/tool-chart';
 import { StatCard } from '@/components/stat-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { formatTokens } from '@ccwrapped/core';
+import { DAILY_TREND_DAYS, HEATMAP_DAYS, TOP_MODELS_COUNT, TOP_TOOLS_COUNT } from '@/lib/consts';
 import { fetchUserProfile, fetchUserStats } from '@/lib/queries';
 
 export const revalidate = 300;
@@ -78,7 +80,7 @@ export default async function ProfilePage({ params }: Props) {
   const modelTotal = [...models.values()].reduce((s, v) => s + v, 0);
   const sortedModels = [...models.entries()]
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
+    .slice(0, TOP_MODELS_COUNT)
     .map(([name, tokens]) => ({
       name,
       tokens,
@@ -88,7 +90,7 @@ export default async function ProfilePage({ params }: Props) {
   const toolTotal = [...toolAgg.values()].reduce((s, v) => s + v, 0);
   const sortedTools = [...toolAgg.entries()]
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
+    .slice(0, TOP_TOOLS_COUNT)
     .map(([name, count]) => ({
       name,
       count,
@@ -112,8 +114,8 @@ export default async function ProfilePage({ params }: Props) {
 
   // Build heatmap (last 90 days)
   const daysByDate = new Map(stats.map((d) => [d.date, d]));
-  const heatmapData = Array.from({ length: 90 }, (_, i) => {
-    const date = new Date(now.getTime() - (89 - i) * 86400_000)
+  const heatmapData = Array.from({ length: HEATMAP_DAYS }, (_, i) => {
+    const date = new Date(now.getTime() - (HEATMAP_DAYS - 1 - i) * 86400_000)
       .toISOString()
       .slice(0, 10);
     const day = daysByDate.get(date);
@@ -131,7 +133,7 @@ export default async function ProfilePage({ params }: Props) {
   const activeDays = stats.length;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
+    <div className="max-w-[80ch] mx-auto px-4 py-8 sm:py-12">
       {/* Header */}
       <header className="flex items-start sm:items-center gap-4 sm:gap-5 mb-10">
         {user.avatarUrl && (
@@ -140,7 +142,7 @@ export default async function ProfilePage({ params }: Props) {
             alt={`${user.username}'s avatar`}
             width={80}
             height={80}
-            className="rounded-full border-2 border-border shadow-sm"
+            className="border-2 border-foreground"
             priority
           />
         )}
@@ -160,7 +162,7 @@ export default async function ProfilePage({ params }: Props) {
 
       {/* Usage */}
       <div className="mb-6">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Usage</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">USAGE</h2>
         <div className="grid grid-cols-3 gap-3">
           <StatCard
             label="Tokens"
@@ -185,7 +187,7 @@ export default async function ProfilePage({ params }: Props) {
 
       {/* Cost */}
       <div className="mb-6">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Cost</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">COST</h2>
         <div className="grid grid-cols-3 gap-3">
           <StatCard
             label="Today"
@@ -211,7 +213,7 @@ export default async function ProfilePage({ params }: Props) {
       {/* Code Output */}
       {(totalFilesTouched > 0 || totalLinesWritten > 0) && (
         <div className="mb-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Code Output</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">CODE OUTPUT</h2>
           <div className="grid grid-cols-2 gap-3">
             {totalFilesTouched > 0 && (
               <StatCard
@@ -252,15 +254,15 @@ export default async function ProfilePage({ params }: Props) {
 
         {/* Daily trend */}
         {stats.length > 0 && (() => {
-          const last30 = stats.slice(-30);
+          const last30 = stats.slice(-DAILY_TREND_DAYS);
           const maxDay = Math.max(
             ...last30.map((d) => d.inputTokens + d.outputTokens),
             1,
           );
           return (
-            <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm">
+            <div className="border-2 border-foreground bg-card p-4 sm:p-6">
               <h3 className="text-sm font-medium text-muted-foreground mb-4">
-                Daily tokens (last 30 days)
+                Daily tokens (last {DAILY_TREND_DAYS} days)
               </h3>
               <div className="flex items-end gap-px h-28">
                 {last30.map((day) => {
@@ -269,7 +271,7 @@ export default async function ProfilePage({ params }: Props) {
                   return (
                     <div
                       key={day.date}
-                      className="flex-1 bg-primary/70 hover:bg-primary rounded-t-sm min-h-[2px] transition-colors"
+                      className="flex-1 bg-primary/70 hover:bg-primary min-h-[2px] transition-colors"
                       style={{ height: `${Math.max(height, 2)}%` }}
                       title={`${day.date}: ${formatTokens(tokens)}`}
                     />
@@ -286,8 +288,8 @@ export default async function ProfilePage({ params }: Props) {
       </div>
 
       {/* Share section */}
-      <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm">
-        <h3 className="text-sm font-medium text-muted-foreground mb-4">Share your stats</h3>
+      <div className="border-2 border-foreground bg-card p-4 sm:p-6">
+        <h3 className="text-sm font-medium text-muted-foreground mb-4 uppercase">Share your stats</h3>
         <div className="flex flex-col sm:flex-row gap-3">
           <a
             href={`/api/card/${user.username}.png`}
@@ -308,10 +310,4 @@ export default async function ProfilePage({ params }: Props) {
       </div>
     </div>
   );
-}
-
-function formatTokens(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return String(n);
 }

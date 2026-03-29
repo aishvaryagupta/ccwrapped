@@ -50,14 +50,14 @@ describe('postSyncPayload', () => {
   });
 
   it('returns server error on 500', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce(new Response('', { status: 500 }));
+    vi.mocked(fetch).mockResolvedValue(new Response('', { status: 500 }));
     const result = await postSyncPayload('https://api.test', 'token', mockPayload);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toBe('server');
   });
 
   it('returns network error on fetch failure', async () => {
-    vi.mocked(fetch).mockRejectedValueOnce(new Error('ECONNREFUSED'));
+    vi.mocked(fetch).mockRejectedValue(new Error('ECONNREFUSED'));
     const result = await postSyncPayload('https://api.test', 'token', mockPayload);
     expect(result).toEqual({ ok: false, error: 'network', message: 'Could not reach server' });
   });
@@ -97,7 +97,7 @@ describe('fetchSyncMetadata', () => {
   });
 
   it('returns network error on failure', async () => {
-    vi.mocked(fetch).mockRejectedValueOnce(new Error('timeout'));
+    vi.mocked(fetch).mockRejectedValue(new Error('timeout'));
     const result = await fetchSyncMetadata('https://api.test', 'token', '2026-03-27');
     expect(result).toEqual({ ok: false, error: 'network' });
   });
