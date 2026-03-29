@@ -31,6 +31,16 @@ try {
       await run(flags);
       break;
     }
+    case 'hook-sync': {
+      const { run } = await import('./commands/hook-sync.js');
+      await run();
+      break;
+    }
+    case 'setup': {
+      const { run } = await import('./commands/setup.js');
+      await run(flags);
+      break;
+    }
     case 'help':
     case '--help':
     case '-h':
@@ -66,20 +76,20 @@ function printHelp() {
   console.log('Usage: ccwrapped [command] [options]');
   console.log();
   console.log('Commands:');
-  console.log('  (default)       Auth + scan + sync (one-command setup)');
+  console.log('  (default)        Auth + scan + sync + auto-sync setup');
   console.log('  (default) --local  Show local usage summary');
-  console.log('  auth            Authenticate with Google');
-  console.log('  auth --logout   Remove stored credentials');
-  console.log('  sync            Sync stats to ccwrapped.dev');
-  console.log('  sync --minimal  Upload tokens only (no model/session data)');
-  console.log('  card            Open your profile in browser');
-  console.log('  card --copy     Copy profile URL to clipboard');
-  console.log('  status          Show sync status and config');
-  console.log('  help            Show this help message');
+  console.log('  auth             Authenticate with Google');
+  console.log('  auth --logout    Remove stored credentials');
+  console.log('  sync             Sync stats to ccwrapped.dev');
+  console.log('  sync --minimal   Upload tokens only (no model/session data)');
+  console.log('  setup            Enable auto-sync after every session');
+  console.log('  setup --remove   Remove auto-sync hook');
+  console.log('  setup --check    Check auto-sync status');
+  console.log('  card             Open your profile in browser');
+  console.log('  card --copy      Copy profile URL to clipboard');
+  console.log('  status           Show sync status and config');
+  console.log('  help             Show this help message');
   console.log();
   console.log('Get started:');
-  console.log('  npx ccwrapdev    # Auth, scan, sync — all in one command');
-  console.log();
-  console.log('For auto-sync after every session:');
-  console.log('  /plugin install ccwrapped');
+  console.log('  npx ccwrapdev    # One command does everything');
 }

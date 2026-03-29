@@ -9,6 +9,8 @@ import {
   fetchSyncMetadata,
   filterDaysForSync,
   getValidToken,
+  isCcwrappedHookInstalled,
+  installCcwrappedHook,
   pollForToken,
   postSyncPayload,
   readState,
@@ -19,6 +21,7 @@ import {
   writeState,
   type DaySummary,
 } from '@ccwrapped/core';
+import { createInterface } from 'node:readline';
 import { openUrl } from '../browser.js';
 import { bold, dim, formatCost, formatTokens, green, red, yellow, printTable } from '../ui.js';
 import { promptForUsername } from './prompt-username.js';
@@ -170,6 +173,33 @@ export async function run(flags: string[]): Promise<void> {
     console.log();
     console.log(`View your profile: ${url}`);
     openUrl(url);
+  }
+
+  // 8. Auto-sync setup
+  if (!isCcwrappedHookInstalled()) {
+    console.log();
+    console.log(bold('Auto-sync'));
+    console.log('Automatically sync stats after every Claude Code session?');
+    console.log(dim('Adds a hook to ~/.claude/settings.json'));
+    console.log();
+
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const answer = await new Promise<string>((resolve) => {
+      rl.question('Set up auto-sync? (Y/n) ', resolve);
+    });
+    rl.close();
+
+    if (answer.trim().toLowerCase() !== 'n') {
+      const result = installCcwrappedHook();
+      if (result.installed) {
+        console.log(green('Auto-sync enabled! Stats will sync after every session.'));
+      } else {
+        console.log(yellow('Could not write to ~/.claude/settings.json.'));
+        console.log(dim('Run "npx ccwrapdev setup" to try again.'));
+      }
+    } else {
+      console.log(dim('Skipped. Run "npx ccwrapdev setup" anytime to enable.'));
+    }
   }
 }
 

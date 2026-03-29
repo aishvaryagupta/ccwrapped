@@ -14,6 +14,7 @@ import {
 import { useState } from 'react';
 
 const NAV_LINKS = [
+  { href: '/docs', label: 'Docs' },
   { href: '/leaderboard', label: 'Leaderboard' },
 ] as const;
 

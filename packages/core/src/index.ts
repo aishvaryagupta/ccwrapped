@@ -96,5 +96,13 @@ export { validateUsername } from './username.js';
 export { calculateLiveCost, fetchLivePricing, resetPricingCache } from './pricing.js';
 export type { LiveModelPricing } from './pricing.js';
 
+// Claude Code settings
+export {
+  getClaudeSettingsPath,
+  isCcwrappedHookInstalled,
+  installCcwrappedHook,
+  uninstallCcwrappedHook,
+} from './claude-settings.js';
+
 // Formatting
 export { formatCost, formatTokens } from './format.js';
