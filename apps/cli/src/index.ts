@@ -50,7 +50,7 @@ try {
       break;
     case '--version':
     case '-v':
-      console.log('ccwrapped 0.1.0');
+      console.log('ccwrapped 0.4.0');
       break;
     default:
       console.error(`Unknown command: ${command}`);

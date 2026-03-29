@@ -60,8 +60,7 @@ export async function POST(request: Request) {
   } else {
     // Path 3: Anonymous first sync
     // Vercel sets x-real-ip as the trusted client IP (not spoofable)
-    const ip = request.headers.get('x-real-ip')
-      ?? request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+    const ip = request.headers.get('x-real-ip');
     if (!ip) {
       return NextResponse.json(
         { error: 'auth', message: 'Unable to determine client IP' },

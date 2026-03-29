@@ -72,19 +72,13 @@ export async function createAnonymousUser(
     .single();
 
   if (existing) {
-    // Existing anonymous user for this machine — but we can't return the raw
-    // sync_token since we only store the hash. The CLI must have lost it.
-    // Generate a new sync_token and update the hash.
-    const rawToken = randomUUID();
-    await getSupabaseAdmin()
-      .from('users')
-      .update({ sync_token_hash: hashSyncToken(rawToken), last_active_at: new Date().toISOString() })
-      .eq('id', existing.id);
-
+    // Machine already has an anonymous profile. Do NOT rotate the token —
+    // that would let an attacker who guesses the machine_id hijack the profile.
+    // The CLI should still have the sync_token in state.json.
     return {
-      ok: true,
-      user: { userId: existing.id, username: existing.username },
-      syncToken: rawToken,
+      ok: false,
+      status: 409,
+      message: 'A profile already exists for this machine. Use your existing sync token or delete ~/.config/ccwrapped/state.json to start fresh.',
     };
   }
 

@@ -107,6 +107,10 @@ export async function run(flags: string[]): Promise<void> {
   for (const sid of sessionIds) {
     if (!existingSessions.has(sid)) postState.synced_sessions.push(sid);
   }
+  // FIFO eviction to cap synced_sessions
+  if (postState.synced_sessions.length > 500) {
+    postState.synced_sessions = postState.synced_sessions.slice(-500);
+  }
   postState.last_sync = new Date().toISOString();
 
   writeState(postState);
@@ -180,7 +184,7 @@ async function showLocalStats(): Promise<void> {
     console.log(dim('Using offline pricing (could not fetch live data)'));
   }
 
-  const payload = buildSyncPayload(entries, buildMachineId(), '0.1.0', livePricing);
+  const payload = buildSyncPayload(entries, buildMachineId(), CLIENT_VERSION, livePricing);
   const days = payload.days;
 
   console.log(bold('ccwrapped') + dim(' — Your Claude Code Stats'));

@@ -3,8 +3,6 @@ import { cn } from '@/lib/utils';
 interface StatCardProps {
   label: string;
   value: string;
-  icon?: React.ReactNode;
-  tooltip?: string;
   className?: string;
 }
 

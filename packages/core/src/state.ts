@@ -8,7 +8,6 @@ import {
 } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { refreshAccessToken } from './auth.js';
 import { CONFIG_DIR_NAME, MAX_SYNCED_SESSIONS, STATE_FILE_NAME } from './consts.js';
 import { buildMachineId } from './payload.js';
 import type { CcwrappedState } from './types.js';
@@ -95,56 +94,10 @@ export function isSessionSynced(sessionId: string, configDir?: string): boolean 
   return state.synced_sessions.includes(sessionId);
 }
 
-export function getAuthToken(configDir?: string): string | null {
-  return readState(configDir).auth_token;
-}
-
-export function setAuthToken(
-  token: string,
-  refreshToken: string,
-  expiresIn: number,
-  configDir?: string,
-): void {
-  const state = readState(configDir);
-  state.auth_token = token;
-  state.refresh_token = refreshToken;
-  state.token_expiry = new Date(Date.now() + expiresIn * 1000).toISOString();
-  writeState(state, configDir);
-}
-
 export function setUsername(username: string, configDir?: string): void {
   const state = readState(configDir);
   state.username = username;
   writeState(state, configDir);
-}
-
-export async function getValidToken(
-  clientId: string,
-  clientSecret: string,
-  configDir?: string,
-): Promise<string | null> {
-  const state = readState(configDir);
-  if (!state.auth_token) return null;
-
-  // Token still valid (with 60s buffer)
-  if (state.token_expiry) {
-    const expiryMs = new Date(state.token_expiry).getTime();
-    if (!Number.isNaN(expiryMs) && Date.now() < expiryMs - 60_000) {
-      return state.auth_token;
-    }
-  }
-
-  // Try refresh
-  if (!state.refresh_token || !clientId || !clientSecret) return null;
-
-  const result = await refreshAccessToken(clientId, clientSecret, state.refresh_token);
-  if (!result) return null;
-
-  state.auth_token = result.accessToken;
-  state.token_expiry = new Date(Date.now() + result.expiresIn * 1000).toISOString();
-  writeState(state, configDir);
-
-  return result.accessToken;
 }
 
 export function getSyncToken(configDir?: string): string | null {

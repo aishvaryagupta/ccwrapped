@@ -4,8 +4,6 @@ export {
   CLIENT_VERSION,
   DEFAULT_CONFIG_PATHS,
   DEFAULT_PRICING,
-  GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
   USERNAME_MAX_LENGTH,
   USERNAME_MIN_LENGTH,
   USERNAME_PATTERN,
@@ -20,12 +18,9 @@ export type { ModelPricing } from './consts.js';
 
 // Types & schemas
 export type {
-  AuthResult,
   DailyDate,
   DaySummary,
-  DeviceCodeResponse,
   CcwrappedState,
-  GoogleUser,
   HookInput,
   HttpResult,
   ModelBreakdown,
@@ -69,13 +64,10 @@ export {
   addSyncedSession,
   clearState,
   fullClearState,
-  getAuthToken,
   getConfigDir,
   getSyncToken,
-  getValidToken,
   isSessionSynced,
   readState,
-  setAuthToken,
   setSyncToken,
   setUsername,
   writeState,
@@ -84,14 +76,6 @@ export {
 // HTTP
 export { claimUsername, fetchSyncMetadata, postSyncPayload } from './http.js';
 export type { SyncAuth, SyncResponse } from './http.js';
-
-// Auth
-export {
-  fetchGoogleUser,
-  pollForToken,
-  refreshAccessToken,
-  startDeviceFlow,
-} from './auth.js';
 
 // Username
 export { validateUsername } from './username.js';

@@ -7,10 +7,8 @@ import {
   addSyncedSession,
   clearState,
   fullClearState,
-  getAuthToken,
   isSessionSynced,
   readState,
-  setAuthToken,
   setSyncToken,
   writeState,
 } from '../src/state.js';
@@ -122,26 +120,12 @@ describe('addSyncedSession', () => {
   });
 });
 
-describe('auth helpers', () => {
-  it('getAuthToken returns null when not set', () => {
-    expect(getAuthToken(tempDir)).toBeNull();
-  });
-
-  it('setAuthToken stores token, refresh token, and expiry', () => {
-    setAuthToken('ya29_abc', '1//refresh', 3600, tempDir);
-    expect(getAuthToken(tempDir)).toBe('ya29_abc');
-    const state = readState(tempDir);
-    expect(state.refresh_token).toBe('1//refresh');
-    expect(state.token_expiry).toBeTruthy();
-  });
-
-  it('clearState resets auth but preserves sync_token', () => {
-    setAuthToken('ya29_abc', '1//refresh', 3600, tempDir);
+describe('sync token and clear', () => {
+  it('clearState resets sessions but preserves sync_token', () => {
     addSyncedSession('sess-1', tempDir);
     setSyncToken('my-sync-token', 'abc123', tempDir);
     clearState(tempDir);
     const state = readState(tempDir);
-    expect(state.auth_token).toBeNull();
     expect(state.synced_sessions).toEqual([]);
     expect(state.sync_token).toBe('my-sync-token');
     expect(state.profile_id).toBe('abc123');
@@ -149,11 +133,9 @@ describe('auth helpers', () => {
 
   it('fullClearState wipes everything including sync_token', () => {
     setSyncToken('my-sync-token', 'abc123', tempDir);
-    setAuthToken('ya29_abc', '1//refresh', 3600, tempDir);
     fullClearState(tempDir);
     const state = readState(tempDir);
     expect(state.sync_token).toBeNull();
     expect(state.profile_id).toBeNull();
-    expect(state.auth_token).toBeNull();
   });
 });

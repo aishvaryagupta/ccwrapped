@@ -20,7 +20,7 @@ export const MAX_BACKFILL_DAYS = 30;
 
 // Payload
 export const SCHEMA_VERSION = 2;
-export const CLIENT_VERSION = '0.3.2';
+export const CLIENT_VERSION = '0.4.0';
 
 // ccwrapped state
 export const CONFIG_DIR_NAME = 'ccwrapped';
@@ -29,12 +29,6 @@ export const MAX_SYNCED_SESSIONS = 500;
 
 // API
 export const API_BASE_URL = process.env.CCWRAPPED_API_BASE_URL ?? 'https://ccwrapped.dev/api';
-export const GOOGLE_CLIENT_ID =
-  process.env.CCWRAPPED_GOOGLE_CLIENT_ID ??
-  '266471192159-3nbjppkhkee2v6eur6vibribf7hhst0v.apps.googleusercontent.com';
-export const GOOGLE_CLIENT_SECRET =
-  process.env.CCWRAPPED_GOOGLE_CLIENT_SECRET ??
-  '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';
 export const HTTP_TIMEOUT_MS = 15_000;
 
 // Username validation

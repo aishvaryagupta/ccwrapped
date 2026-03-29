@@ -120,16 +120,20 @@ export async function GET(request: Request) {
 
   if (existingGoogleUser && existingGoogleUser.id !== anonUser.id) {
     // Merge: atomic RPC transfers stats, sync_token, deletes anonymous user
-    await supabase.rpc('merge_anonymous_user', {
+    const { error: mergeError } = await supabase.rpc('merge_anonymous_user', {
       p_anon_user_id: anonUser.id,
       p_target_user_id: existingGoogleUser.id,
     });
+
+    if (mergeError) {
+      return NextResponse.redirect(`${BASE_URL}?error=merge_failed`);
+    }
 
     finalUserId = existingGoogleUser.id;
     finalUsername = existingGoogleUser.username;
   } else {
     // Link Google account to anonymous user
-    await supabase
+    const { error: linkError } = await supabase
       .from('users')
       .update({
         google_id: googleUser.id,
@@ -138,6 +142,10 @@ export async function GET(request: Request) {
         avatar_url: googleUser.picture,
       })
       .eq('id', anonUser.id);
+
+    if (linkError) {
+      return NextResponse.redirect(`${BASE_URL}?error=link_failed`);
+    }
 
     finalUserId = anonUser.id;
     finalUsername = anonUser.username;
