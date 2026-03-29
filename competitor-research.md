@@ -13,7 +13,7 @@
 |---|---|---|
 | **Source** | Claude Code JSONL transcript files | Claude Code, Codex, and OpenClaw session files |
 | **What's read** | `~/.config/claude/projects/**/*.jsonl` | Same Claude logs + Codex + OpenClaw logs |
-| **Data points** | Tokens (input/output/cache), sessions, projects, models, cost | Tokens, sessions, prompts, models, cost, lines written, files touched, tool usage, projects, languages |
+| **Data points** | Tokens (input/output/cache), sessions, projects, models, cost, lines written, tool usage | Tokens, sessions, prompts, models, cost, lines written, files touched, tool usage, projects, languages |
 | **Granularity** | Daily aggregates only | Per-session level (richer detail) |
 | **Code sent?** | Never — aggregates only | Never — aggregates only |
 
@@ -21,8 +21,9 @@
 
 | | **ccwrapped** | **Code Card** |
 |---|---|---|
-| **Auto-sync** | Claude Code plugin hooks (SessionEnd, Stop, SubagentStop) | PostToolUse hook (Claude Code), manual for others |
+| **Auto-sync** | SessionEnd hook via `~/.claude/settings.json` (or plugin) | PostToolUse hook (Claude Code), manual for others |
 | **Manual sync** | `npx ccwrapdev sync` | `npx code-card` |
+| **Auth for sync** | None — uses anonymous `sync_token` | Device code auth required |
 | **Trigger** | Automatic after every session | Automatic for Claude Code, manual for Codex/OpenClaw |
 | **Behavior** | Silent, async, non-blocking (30s timeout) | Similar — background sync |
 | **Deduplication** | Session ID tracking (last 500) | Unknown |
@@ -31,45 +32,45 @@
 
 | | **ccwrapped** | **Code Card** |
 |---|---|---|
-| **Setup** | 2-3 commands (marketplace add + install + auth) | 1 command (`npx code-card`) |
-| **Auth method** | Google OAuth Device Flow | Device code → browser link |
-| **Plugin needed?** | Yes (for auto-sync) | No — npx runs directly |
+| **Setup** | 1 command (`npx ccwrapdev`) — zero auth, zero sign-up | 1 command (`npx code-card`) |
+| **Auth method** | None required — anonymous sync token; optional Google OAuth on web for claiming username | Device code → browser link |
+| **Plugin needed?** | No — npx runs directly; plugin available as optional alternative | No — npx runs directly |
 | **Node requirement** | Node 20+ | Node 18+ |
-| **Friction** | Higher — marketplace add step confuses users | Lower — single npx command |
+| **Friction** | Lowest — no auth, no account, just run and get stats | Lower — single npx command but still requires auth |
 
 ### Auth Flow Detail
 
-**ccwrapped (Google OAuth Device Flow):**
-1. CLI calls Google's device code endpoint → gets a one-time code (e.g. `XXXX-XXXX`)
-2. Shows code to user and opens `https://www.google.com/device` in browser
-3. User enters code on Google's page and authorizes
-4. CLI polls Google in background until authorization completes
-5. Stores access token + refresh token in `~/.config/ccwrapped/state.json`
+**ccwrapped (Sync First, Claim Later):**
+1. User runs `npx ccwrapdev` — no auth step at all
+2. CLI scans local logs, shows stats in terminal, syncs anonymously
+3. Server issues a `sync_token` stored in `~/.config/ccwrapped/state.json`
+4. User gets an anonymous profile at `ccwrapped.dev/p/{id}`
+5. Optionally, user claims a username on the web via Google OAuth (e.g. `ccwrapped.dev/alice`)
 
 **Code Card:**
 1. User runs `npx code-card`
 2. CLI reads local session files and likely initiates a device code flow (device code → browser link)
 3. Despite "no OAuth" marketing, profile URLs (`codecard.dev/[username]`) require identity — some auth step exists but is downplayed in their messaging
 
-**Implication:** Both products use a similar device-code-to-browser flow. Code Card's real advantage is fewer setup steps (1 npx command vs marketplace add + install + auth), not the absence of auth itself.
+**Implication:** ccwrapped now has the simplest onboarding — truly zero auth. The user sees stats and gets a profile before any identity is involved. Code Card still requires some form of auth before a profile can be created.
 
 ## Profile & Dashboard Features
 
 | Feature | **ccwrapped** | **Code Card** |
 |---|---|---|
 | **Profile page** | `/[username]` | `/[username]` |
-| **Stat cards** | Tokens, sessions, projects, cost | Sessions, prompts, tokens, cost, lines written, files touched, language, streak |
-| **Activity heatmap** | 90-day GitHub-style | Full year GitHub-style |
+| **Stat cards** | Tokens, sessions, projects, cost, lines written | Sessions, prompts, tokens, cost, lines written, files touched, language, streak |
+| **Activity heatmap** | Full year GitHub-style | Full year GitHub-style |
 | **Model breakdown** | Top 5 models chart | Model usage bar (Opus, Sonnet, Haiku, GPT) |
-| **Token breakdown** | No | Input/Output/Cache Read/Cache Write |
+| **Token breakdown** | Yes (Input/Output/Cache breakdown) | Input/Output/Cache Read/Cache Write |
 | **Platform breakdown** | No (Claude Code only) | Yes (Claude Code / Codex / OpenClaw split) |
-| **Tool usage chart** | No | Yes (Bash, Read, Edit, Write, Glob, etc.) |
+| **Tool usage chart** | Yes (Bash, Read, Edit, Write, Glob, etc.) | Yes (Bash, Read, Edit, Write, Glob, etc.) |
 | **Top projects** | No | Yes (anonymized, ranked by sessions) |
-| **Streaks** | No | Yes (current + longest streak) |
+| **Streaks** | Yes (current + longest streak) | Yes (current + longest streak) |
 | **Badges** | No | Yes (3 visible badges) |
 | **Shareable OG card** | Yes (Satori, 1hr cache) | Yes (auto-generated social cards) |
 | **Share button** | Copy URL | Share Profile button |
-| **Social links** | No | GitHub, Twitter, Website |
+| **Social links** | Yes (GitHub, Twitter, Website) | GitHub, Twitter, Website |
 | **Privacy controls** | No (all public) | Yes (toggle visibility per section) |
 | **Leaderboard** | Yes (daily/weekly/monthly) | Yes (Most Active / Newest / Trending) |
 
@@ -110,18 +111,32 @@
 
 **Code Card is ahead on:**
 - Multi-platform support (Codex, OpenClaw)
-- Richer profile (tool usage, projects, lines written, badges, streaks)
-- Simpler onboarding (1 command vs 2-3)
-- Privacy controls (toggle sections)
-- More polished landing page
+- Badges system
+- Privacy controls (toggle visibility per section)
+- Top projects display
 
 **ccwrapped is ahead on:**
+- Simplest onboarding in the category — zero auth, zero sign-up, just `npx ccwrapdev`
+- "Sync First, Claim Later" — users get value before any account creation
 - Open source (auditable)
 - Claude Code plugin (native marketplace integration, pending official listing)
 - Cleaner auto-sync (fire-and-forget hooks)
 
+**Now at parity:**
+- Token breakdown (input/output/cache)
+- Streaks (current + longest)
+- Social links (GitHub, Twitter, Website)
+- Full-year activity heatmap
+- Tool usage chart
+- Lines written tracking
+
 ## Biggest Gaps to Close
 
-1. **Onboarding friction** — Code Card's `npx code-card` is simpler than the 2-command plugin flow. Getting into the official marketplace will fix this.
-2. **Profile richness** — Code Card tracks tool usage, lines written, files touched, projects, streaks, badges. ccwrapped profile is more minimal.
-3. **Multi-platform** — Codex and OpenClaw support gives them a wider TAM.
+1. **Multi-platform** — Codex and OpenClaw support gives Code Card a wider TAM. ccwrapped is Claude Code only.
+2. **Badges** — Code Card has a badge system; ccwrapped does not yet.
+3. **Privacy controls** — Code Card allows toggling visibility per profile section; ccwrapped profiles are fully public.
+4. **Top projects** — Code Card shows anonymized project rankings; ccwrapped does not.
+
+**Gaps already closed (v0.4.0):**
+- ~~Onboarding friction~~ — ccwrapped now has the simplest onboarding: zero auth, zero sign-up, one command.
+- ~~Profile richness~~ — Token breakdown, streaks, social links, full-year heatmap, tool usage, and lines written are all now available.

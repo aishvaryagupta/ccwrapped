@@ -6,59 +6,55 @@ A plain-English guide to every way a user can interact with ccwrapped, and how t
 
 ## Flow 1: Brand New User (The Happy Path)
 
-**What happens:** User has never used ccwrapped before. They run one command and get everything set up.
+**What happens:** User has never used ccwrapped before. They run one command — no sign-up, no auth, no account needed.
 
 ```
 $ npx ccwrapdev
 ```
 
 **Step by step:**
-1. CLI sees no auth token → starts Google login
-2. Shows a code like `WDJB-JRFX` and opens google.com/device in browser
-3. User enters the code on Google's page and clicks "Allow"
-4. CLI detects authorization → saves token
-5. Asks user to pick a username (e.g. `alice`)
-6. Scans `~/.config/claude/projects/` and `~/.claude/projects/` for Claude Code logs
-7. Aggregates token counts, cost, models per day
-8. Uploads to ccwrapped.dev
-9. Opens profile at `https://ccwrapped.dev/alice` in browser
-10. Asks "Set up auto-sync? (Y/n)" → user presses Enter (yes)
-11. Writes a hook to `~/.claude/settings.json`
-12. Done. From now on, stats sync automatically after every Claude Code session.
+1. Scans `~/.config/claude/projects/` and `~/.claude/projects/` for Claude Code logs
+2. Aggregates token counts, cost, models per day
+3. Shows stats summary in the terminal (tokens, cost, model breakdown)
+4. Syncs anonymously to ccwrapped.dev — no auth required
+5. Gets an anonymous profile at `https://ccwrapped.dev/p/{id}`
+6. Opens the profile URL in browser
+7. Asks "Set up auto-sync? (Y/n)" → user presses Enter (yes)
+8. Writes a hook to `~/.claude/settings.json`
+9. Done. From now on, stats sync automatically after every Claude Code session.
+10. User can optionally claim a username on the web via Google OAuth (e.g. `ccwrapped.dev/alice`)
 
 **How to test:**
 - [ ] Delete `~/.config/ccwrapped/state.json` (fresh start)
 - [ ] Run `npx ccwrapdev`
-- [ ] Verify Google auth page opens in browser
-- [ ] Complete auth → see "Authenticated as {email}"
-- [ ] Enter a username → see "Username set: @{name}"
+- [ ] Verify NO auth prompt appears — no Google login, no sign-up
+- [ ] Verify terminal shows stats summary (tokens, cost, model breakdown)
 - [ ] Verify "Synced X day(s)" appears with token/cost summary
-- [ ] Verify profile URL opens in browser
+- [ ] Verify anonymous profile URL opens in browser at `/p/{id}`
 - [ ] Press Enter at "Set up auto-sync?" prompt
 - [ ] Verify "Auto-sync enabled!" message
 - [ ] Check `~/.claude/settings.json` contains `ccwrapdev hook-sync` in SessionEnd hooks
+- [ ] Visit the profile URL → verify profile shows token breakdown, heatmap, tool usage
 
 ---
 
 ## Flow 2: Returning User Runs Default Command Again
 
-**What happens:** User already has auth + username + hook. They just want to re-sync.
+**What happens:** User already has a sync token + hook. They just want to re-sync.
 
 ```
 $ npx ccwrapdev
 ```
 
 **Step by step:**
-1. CLI finds valid token → skips auth
-2. Username already set → skips prompt
-3. Scans logs, builds payload, uploads
-4. Hook already installed → skips auto-sync prompt
-5. Shows sync summary and opens profile
+1. CLI finds existing sync token → uses it for sync
+2. Scans logs, builds payload, uploads
+3. Hook already installed → skips auto-sync prompt
+4. Shows sync summary and opens profile
 
 **How to test:**
 - [ ] Run `npx ccwrapdev` after already being set up
 - [ ] Verify no auth prompt appears
-- [ ] Verify no username prompt appears
 - [ ] Verify no auto-sync prompt appears (hook already installed)
 - [ ] Verify sync completes and profile opens
 
@@ -86,43 +82,40 @@ $ npx ccwrapdev --local
 
 ---
 
-## Flow 4: Standalone Auth
+## Flow 4: Standalone Auth (Deprecated)
 
-**What happens:** User just wants to authenticate without syncing.
+**What happens:** This flow is deprecated. Auth is no longer required for syncing. The CLI uses anonymous sync tokens instead of Google OAuth. Users who want a named profile can claim a username via Google OAuth on the web at ccwrapped.dev.
 
 ```
 $ npx ccwrapdev auth
 ```
 
 **Step by step:**
-1. If already authenticated → shows "Already authenticated as @{username}"
-2. If not → starts Google Device Flow (same as Flow 1 steps 1-4)
-3. After auth → "Authentication complete. Welcome, {email}!"
+1. This command is no longer part of the primary flow
+2. Auth now happens on the web (optional username claiming via Google OAuth)
+3. CLI sync uses a `sync_token` stored locally — no Google OAuth needed
 
 **How to test:**
-- [ ] Run `npx ccwrapdev auth` when NOT authenticated → verify device flow starts
-- [ ] Complete auth → verify success message with email
-- [ ] Run `npx ccwrapdev auth` again → verify "Already authenticated" message
+- [ ] Run `npx ccwrapdev auth` → verify it either shows a deprecation notice or is a no-op
+- [ ] Verify the main flow (`npx ccwrapdev`) works without ever running `auth`
 
 ---
 
-## Flow 5: Logout
+## Flow 5: Logout (Deprecated)
 
-**What happens:** User wants to remove their credentials from this machine.
+**What happens:** This flow is deprecated. Since the CLI no longer uses Google OAuth, there are no OAuth credentials to clear. The CLI uses a local `sync_token` for anonymous sync.
 
 ```
 $ npx ccwrapdev auth --logout
 ```
 
 **Step by step:**
-1. Clears all auth tokens, username, synced sessions from state file
-2. Shows "Logged out. Credentials removed."
+1. Clears local sync token and synced sessions from state file
+2. Shows "Logged out. Local data cleared."
 
 **How to test:**
-- [ ] Run `npx ccwrapdev auth --logout`
-- [ ] Verify "Logged out" message
-- [ ] Run `npx ccwrapdev status` → verify "Auth: Not authenticated"
-- [ ] Run `npx ccwrapdev auth` → verify it asks to re-authenticate
+- [ ] Run `npx ccwrapdev auth --logout` → verify local state is cleared
+- [ ] Run `npx ccwrapdev` → verify it re-syncs anonymously with a new profile ID
 
 ---
 
@@ -135,14 +128,13 @@ $ npx ccwrapdev sync
 ```
 
 **Step by step:**
-1. Checks auth → fails if not authenticated
-2. Prompts for username if not set
-3. Scans logs, builds payload, uploads
-4. Shows sync summary with profile URL
+1. Uses existing sync token (or creates one anonymously on first run)
+2. Scans logs, builds payload, uploads
+3. Shows sync summary with profile URL
 
 **How to test:**
-- [ ] Run `npx ccwrapdev sync` while authenticated → verify sync completes
-- [ ] Run `npx ccwrapdev sync` while NOT authenticated → verify error: "Not authenticated"
+- [ ] Run `npx ccwrapdev sync` → verify sync completes (no auth needed)
+- [ ] Verify profile URL is shown after sync
 
 ---
 
@@ -155,7 +147,7 @@ $ npx ccwrapdev sync --minimal
 ```
 
 **Step by step:**
-1. Same as Flow 6 but strips model breakdowns, session counts, project counts
+1. Same as Flow 6 but strips model breakdowns, session counts, project counts (no auth required)
 2. Only uploads: date, token counts (input/output/cache), cost
 
 **How to test:**
@@ -237,7 +229,7 @@ $ npx ccwrapdev setup --remove
 **Step by step:**
 1. Claude Code pipes `{ session_id, transcript_path }` to stdin
 2. Hook checks if session was already synced (idempotent)
-3. Gets auth token (silently skips if not authenticated)
+3. Uses sync_token from local state (no Google OAuth needed)
 4. Parses the single transcript file
 5. Builds payload and uploads
 6. Marks session as synced
@@ -265,20 +257,17 @@ $ npx ccwrapdev setup --remove
 /plugin install ccwrapped@ccwrapped-marketplace
 ```
 
-**Then authenticate:**
-```
-$ npx ccwrapdev auth
-```
+**No separate auth step needed** — the plugin uses the same `sync_token` as the CLI.
 
 **How it works:**
 - Plugin registers hooks for SessionEnd, Stop, and SubagentStop
 - Each hook runs `node ${CLAUDE_PLUGIN_ROOT}/dist/sync.js`
 - Same logic as hook-sync but runs via the plugin system
-- If no auth token: prints to stderr suggesting `npx ccwrapped auth`
+- Uses `sync_token` from local state (no Google OAuth needed)
 
 **How to test:**
 - [ ] Install plugin via `/plugin` commands inside Claude Code
-- [ ] Authenticate: `npx ccwrapdev auth`
+- [ ] Run `npx ccwrapdev` at least once (to create the sync token)
 - [ ] Use Claude Code, end session
 - [ ] Check profile on web → data should appear
 
@@ -293,12 +282,12 @@ $ npx ccwrapdev card          # opens in browser
 $ npx ccwrapdev card --copy   # copies URL to clipboard
 ```
 
-**Prerequisites:** Must be authenticated with a username set.
+**Prerequisites:** Must have synced at least once (to have a profile ID or claimed username).
 
 **How to test:**
-- [ ] Run `npx ccwrapdev card` → verify browser opens `ccwrapped.dev/{username}`
+- [ ] Run `npx ccwrapdev card` → verify browser opens `ccwrapped.dev/p/{id}` (or `ccwrapped.dev/{username}` if claimed)
 - [ ] Run `npx ccwrapdev card --copy` → verify URL is in clipboard
-- [ ] Run without auth → verify error: "No profile yet..."
+- [ ] Run before any sync → verify error: "No profile yet..."
 
 ---
 
@@ -314,7 +303,7 @@ $ npx ccwrapdev status
 ```
 ccwrapped status
 
-  Auth:       @alice
+  Profile:    ccwrapped.dev/p/{id} (or @alice if claimed)
   Last sync:  2026-03-29 14:30:45 UTC
   Sessions:   42 tracked
   Machine:    a1b2c3d4e5f6
@@ -324,7 +313,7 @@ ccwrapped status
 
 **How to test:**
 - [ ] Run when fully set up → verify all fields populated
-- [ ] Run when not authenticated → verify "Auth: Not authenticated" (red)
+- [ ] Run when never synced → verify "Profile: Not synced yet"
 - [ ] Run when auto-sync not configured → verify "Auto-sync: Not configured" (yellow)
 
 ---
@@ -345,21 +334,19 @@ ccwrapped status
 
 ---
 
-## Flow 16: Token Expiry & Auto-Refresh
+## Flow 16: Sync Token Persistence
 
-**What happens:** Google OAuth tokens expire after ~1 hour. The CLI refreshes them automatically.
+**What happens:** The CLI uses a locally-stored `sync_token` for all sync operations. No Google OAuth tokens to refresh.
 
 **Step by step:**
-1. `getValidToken()` checks if token is within 60 seconds of expiry
-2. If expiring → uses refresh token to get a new access token
-3. Saves new token + expiry to state file
-4. User never sees this happen
+1. On first sync, the server issues a `sync_token` and the CLI stores it in state.json
+2. All subsequent syncs use this token to identify the anonymous profile
+3. The token does not expire — it persists until the user clears local state
 
 **How to test:**
-- [ ] Manually set `token_expiry` in state.json to a past date
-- [ ] Run any command that needs auth (e.g. `npx ccwrapdev sync`)
-- [ ] Verify it succeeds without re-prompting for auth
-- [ ] Check state.json → `token_expiry` should be updated to future
+- [ ] Run `npx ccwrapdev` → verify `sync_token` is written to state.json
+- [ ] Run `npx ccwrapdev sync` again → verify it reuses the same token
+- [ ] Delete `sync_token` from state.json → run `npx ccwrapdev` → verify a new anonymous profile is created
 
 ---
 
@@ -370,8 +357,8 @@ ccwrapped status
 | No Claude Code logs exist | "No usage data found." with paths checked |
 | Claude Code logs are empty | Same as above |
 | Network is offline (during sync) | "Could not reach ccwrapped.dev." |
-| Network is offline (during auth) | "Failed to start authentication. Check your network." |
-| Username already taken | Prompt retries up to 3 times, then fails |
+| Network is offline (during first run) | Stats shown locally, sync fails gracefully |
+| `sync_token` missing from state.json | CLI creates a new anonymous profile on next sync |
 | `~/.claude/settings.json` doesn't exist | `setup` creates it with just the hook |
 | `~/.claude/settings.json` has other hooks | `setup` appends without clobbering |
 | `~/.claude/settings.json` is malformed JSON | `setup` treats as empty, writes fresh |
@@ -385,16 +372,16 @@ ccwrapped status
 
 | Command | Purpose | Auth Required? |
 |---------|---------|---------------|
-| `npx ccwrapdev` | Full setup: auth + sync + auto-sync | No (creates auth) |
+| `npx ccwrapdev` | Scan + sync + auto-sync (zero auth) | No |
 | `npx ccwrapdev --local` | View local stats | No |
-| `npx ccwrapdev auth` | Authenticate only | No (creates auth) |
-| `npx ccwrapdev auth --logout` | Remove credentials | No |
-| `npx ccwrapdev sync` | Manual sync | Yes |
-| `npx ccwrapdev sync --minimal` | Sync without model data | Yes |
+| `npx ccwrapdev auth` | Deprecated — auth happens on web | No |
+| `npx ccwrapdev auth --logout` | Clear local state | No |
+| `npx ccwrapdev sync` | Manual sync | No |
+| `npx ccwrapdev sync --minimal` | Sync without model data | No |
 | `npx ccwrapdev setup` | Enable auto-sync hook | No |
 | `npx ccwrapdev setup --check` | Check if auto-sync is active | No |
 | `npx ccwrapdev setup --remove` | Disable auto-sync hook | No |
-| `npx ccwrapdev card` | Open profile in browser | Yes |
-| `npx ccwrapdev card --copy` | Copy profile URL | Yes |
+| `npx ccwrapdev card` | Open profile in browser | No |
+| `npx ccwrapdev card --copy` | Copy profile URL | No |
 | `npx ccwrapdev status` | Show config overview | No |
 | `npx ccwrapdev help` | Show help text | No |
