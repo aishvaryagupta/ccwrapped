@@ -1,14 +1,36 @@
 import { NextResponse } from 'next/server';
-import { verifyAndUpsertUser } from '@/lib/auth';
+import { verifyAndUpsertUser, verifyBySyncToken } from '@/lib/auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request: Request) {
-  // Auth
-  const auth = await verifyAndUpsertUser(request.headers.get('Authorization'));
-  if (!auth.ok) {
+  // Dual auth: X-Sync-Token takes priority over Bearer
+  const syncTokenHeader = request.headers.get('X-Sync-Token');
+  const bearerHeader = request.headers.get('Authorization');
+
+  let userId: string;
+
+  if (syncTokenHeader) {
+    const auth = await verifyBySyncToken(syncTokenHeader);
+    if (!auth.ok) {
+      return NextResponse.json(
+        { error: 'auth', message: auth.message },
+        { status: auth.status },
+      );
+    }
+    userId = auth.user.userId;
+  } else if (bearerHeader) {
+    const auth = await verifyAndUpsertUser(bearerHeader);
+    if (!auth.ok) {
+      return NextResponse.json(
+        { error: 'auth', message: auth.message },
+        { status: auth.status },
+      );
+    }
+    userId = auth.user.userId;
+  } else {
     return NextResponse.json(
-      { error: 'auth', message: auth.message },
-      { status: auth.status },
+      { error: 'auth', message: 'Missing authentication' },
+      { status: 401 },
     );
   }
 
@@ -26,7 +48,7 @@ export async function GET(request: Request) {
   const { data, error } = await getSupabaseAdmin()
     .from('daily_stats')
     .select('machine_id, synced_at, input_tokens, output_tokens')
-    .eq('user_id', auth.user.userId)
+    .eq('user_id', userId)
     .eq('date', date)
     .single();
 

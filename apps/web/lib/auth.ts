@@ -1,20 +1,136 @@
+import { createHash, randomUUID } from 'node:crypto';
 import { getSupabaseAdmin } from './supabase';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 export interface AuthenticatedUser {
   userId: string;
-  googleId: string;
   username: string | null;
-  email: string;
-  avatarUrl: string;
+  googleId?: string;
+  email?: string;
+  avatarUrl?: string;
 }
 
 type AuthResult =
-  | { ok: true; user: AuthenticatedUser }
+  | { ok: true; user: AuthenticatedUser; syncToken?: string }
   | { ok: false; status: number; message: string };
+
+// ---------------------------------------------------------------------------
+// Sync token helpers
+// ---------------------------------------------------------------------------
+
+function hashSyncToken(raw: string): string {
+  return createHash('sha256').update(raw).digest('hex');
+}
+
+// ---------------------------------------------------------------------------
+// Verify by sync token (X-Sync-Token header)
+// ---------------------------------------------------------------------------
+
+export async function verifyBySyncToken(rawToken: string): Promise<AuthResult> {
+  const hash = hashSyncToken(rawToken);
+
+  const { data, error } = await getSupabaseAdmin()
+    .from('users')
+    .select('id, username')
+    .eq('sync_token_hash', hash)
+    .single();
+
+  if (error || !data) {
+    return { ok: false, status: 401, message: 'Invalid sync token' };
+  }
+
+  // Update last_active_at
+  await getSupabaseAdmin()
+    .from('users')
+    .update({ last_active_at: new Date().toISOString() })
+    .eq('id', data.id);
+
+  return {
+    ok: true,
+    user: { userId: data.id, username: data.username },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Create anonymous user (no auth headers)
+// ---------------------------------------------------------------------------
+
+export async function createAnonymousUser(
+  machineId: string,
+  ip: string,
+): Promise<AuthResult & { syncToken?: string }> {
+  // IP rate limit: max 5 anonymous creations per IP per hour
+  const ipAllowed = await checkAnonymousCreationLimit(ip);
+  if (!ipAllowed) {
+    return { ok: false, status: 429, message: 'Too many accounts created. Try again later.' };
+  }
+
+  const rawToken = randomUUID();
+  const hash = hashSyncToken(rawToken);
+
+  const { data, error } = await getSupabaseAdmin()
+    .from('users')
+    .insert({ sync_token_hash: hash, machine_id: machineId })
+    .select('id, username')
+    .single();
+
+  if (error || !data) {
+    return { ok: false, status: 500, message: 'Failed to create user' };
+  }
+
+  return {
+    ok: true,
+    user: { userId: data.id, username: data.username },
+    syncToken: rawToken,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// IP-based rate limit for anonymous user creation
+// ---------------------------------------------------------------------------
+
+async function checkAnonymousCreationLimit(ip: string): Promise<boolean> {
+  const supabase = getSupabaseAdmin();
+  const oneHourAgo = new Date(Date.now() - 3600_000).toISOString();
+
+  // Clean expired windows
+  await supabase
+    .from('anon_creation_limits')
+    .delete()
+    .lt('window_start', oneHourAgo);
+
+  // Check current count
+  const { data } = await supabase
+    .from('anon_creation_limits')
+    .select('count')
+    .eq('ip_address', ip)
+    .single();
+
+  if (data && data.count >= 5) {
+    return false;
+  }
+
+  // Upsert: increment or insert
+  await supabase
+    .from('anon_creation_limits')
+    .upsert(
+      { ip_address: ip, count: (data?.count ?? 0) + 1, window_start: data ? undefined : new Date().toISOString() },
+      { onConflict: 'ip_address' },
+    );
+
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Verify by Google Bearer token (backward compat)
+// ---------------------------------------------------------------------------
 
 export async function verifyAndUpsertUser(
   authHeader: string | null,
-): Promise<AuthResult> {
+): Promise<AuthResult & { syncToken?: string }> {
   if (!authHeader?.startsWith('Bearer ')) {
     return { ok: false, status: 401, message: 'Missing or invalid Authorization header' };
   }
@@ -58,6 +174,23 @@ export async function verifyAndUpsertUser(
     return { ok: false, status: 500, message: 'Failed to upsert user' };
   }
 
+  // Generate sync_token for migration if user doesn't have one
+  let syncToken: string | undefined;
+  const { data: userRow } = await getSupabaseAdmin()
+    .from('users')
+    .select('sync_token_hash')
+    .eq('id', data.user_id)
+    .single();
+
+  if (!userRow?.sync_token_hash) {
+    const rawToken = randomUUID();
+    await getSupabaseAdmin()
+      .from('users')
+      .update({ sync_token_hash: hashSyncToken(rawToken) })
+      .eq('id', data.user_id);
+    syncToken = rawToken;
+  }
+
   return {
     ok: true,
     user: {
@@ -67,5 +200,6 @@ export async function verifyAndUpsertUser(
       email: googleUser.email,
       avatarUrl: googleUser.picture,
     },
+    syncToken,
   };
 }

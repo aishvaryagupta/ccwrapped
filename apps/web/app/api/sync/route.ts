@@ -1,34 +1,11 @@
 import { NextResponse } from 'next/server';
-import { verifyAndUpsertUser } from '@/lib/auth';
+import { verifyAndUpsertUser, verifyBySyncToken, createAnonymousUser } from '@/lib/auth';
 import { checkAndUpdateRateLimit } from '@/lib/rate-limit';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { validateSyncPayload } from '@/lib/validation';
 
 export async function POST(request: Request) {
-  // 1. Auth
-  const auth = await verifyAndUpsertUser(request.headers.get('Authorization'));
-  if (!auth.ok) {
-    return NextResponse.json(
-      { error: 'auth', message: auth.message },
-      { status: auth.status },
-    );
-  }
-
-  const { user } = auth;
-
-  // 2. Rate limit
-  const rateLimit = await checkAndUpdateRateLimit(user.userId);
-  if (!rateLimit.allowed) {
-    return NextResponse.json(
-      { error: 'rate_limit', message: 'Too many syncs. Try again later.' },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(rateLimit.retryAfter) },
-      },
-    );
-  }
-
-  // 3. Validate payload
+  // 1. Parse body first (needed for machine_id in anonymous creation)
   let body: unknown;
   try {
     body = await request.json();
@@ -49,9 +26,69 @@ export async function POST(request: Request) {
 
   const { payload } = validation;
 
+  // 2. Three-way auth (X-Sync-Token takes priority over Bearer)
+  const syncTokenHeader = request.headers.get('X-Sync-Token');
+  const bearerHeader = request.headers.get('Authorization');
+
+  let userId: string;
+  let username: string | null = null;
+  let returnSyncToken: string | undefined;
+
+  if (syncTokenHeader) {
+    // Path 1: Sync token auth (new CLI)
+    const auth = await verifyBySyncToken(syncTokenHeader);
+    if (!auth.ok) {
+      return NextResponse.json(
+        { error: 'auth', message: auth.message },
+        { status: auth.status },
+      );
+    }
+    userId = auth.user.userId;
+    username = auth.user.username;
+  } else if (bearerHeader) {
+    // Path 2: Google Bearer auth (backward compat)
+    const auth = await verifyAndUpsertUser(bearerHeader);
+    if (!auth.ok) {
+      return NextResponse.json(
+        { error: 'auth', message: auth.message },
+        { status: auth.status },
+      );
+    }
+    userId = auth.user.userId;
+    username = auth.user.username;
+    returnSyncToken = auth.syncToken;
+  } else {
+    // Path 3: Anonymous first sync
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      ?? request.headers.get('x-real-ip')
+      ?? 'unknown';
+    const auth = await createAnonymousUser(payload.machine_id, ip);
+    if (!auth.ok) {
+      return NextResponse.json(
+        { error: 'auth', message: auth.message },
+        { status: auth.status },
+      );
+    }
+    userId = auth.user.userId;
+    username = auth.user.username;
+    returnSyncToken = auth.syncToken;
+  }
+
+  // 3. Rate limit
+  const rateLimit = await checkAndUpdateRateLimit(userId);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: 'rate_limit', message: 'Too many syncs. Try again later.' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(rateLimit.retryAfter) },
+      },
+    );
+  }
+
   // 4. Upsert daily_stats
   const rows = payload.days.map((day) => ({
-    user_id: user.userId,
+    user_id: userId,
     date: day.date,
     input_tokens: day.inputTokens,
     output_tokens: day.outputTokens,
@@ -79,8 +116,15 @@ export async function POST(request: Request) {
     );
   }
 
-  // 5. Respond
+  // 5. Build profile URL
+  const profileUrl = username
+    ? `https://ccwrapped.dev/@${username}`
+    : `https://ccwrapped.dev/p/${userId.slice(0, 8)}`;
+
+  // 6. Respond
   return NextResponse.json({
-    profile_url: user.username ? `https://ccwrapped.dev/@${user.username}` : null,
+    profile_url: profileUrl,
+    username,
+    ...(returnSyncToken ? { sync_token: returnSyncToken } : {}),
   });
 }
