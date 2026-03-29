@@ -12,7 +12,7 @@ export default function UserNotFound() {
           Want your own profile? Install the plugin:
         </p>
         <code className="inline-block bg-card border-2 border-foreground px-4 py-2 text-sm font-mono text-primary">
-          /plugin install ccwrapped
+          /plugin install ccwrapped@ccwrapped-marketplace
         </code>
       </div>
       <div className="mt-8">

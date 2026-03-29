@@ -21,7 +21,7 @@ export default function LandingPage() {
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <code className="bg-card border-2 border-foreground px-6 py-3 text-sm font-mono text-primary select-all">
-            /plugin install ccwrapped
+            /plugin install ccwrapped@ccwrapped-marketplace
           </code>
           <Link href="/leaderboard">
             <Button variant="ghost" className="gap-2 text-muted-foreground">
@@ -96,7 +96,7 @@ export default function LandingPage() {
             https://github.com/aishvaryagupta/ccwrapped-plugin.git
           </p>
           <p className="text-foreground">
-            <span className="text-primary" aria-hidden="true">$</span> /plugin install ccwrapped
+            <span className="text-primary" aria-hidden="true">$</span> /plugin install ccwrapped@ccwrapped-marketplace
           </p>
           <div className="border-t-2 border-foreground my-4" />
           <p className="text-muted-foreground"># Or try the CLI first</p>
