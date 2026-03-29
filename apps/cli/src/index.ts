@@ -6,9 +6,11 @@ const flags = process.argv.slice(3);
 try {
   switch (command) {
     case undefined:
-    case '': {
+    case '':
+    case '--local': {
       const { run } = await import('./commands/default.js');
-      await run(flags);
+      const allFlags = command === '--local' ? ['--local', ...flags] : flags;
+      await run(allFlags);
       break;
     }
     case 'auth': {
