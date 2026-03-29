@@ -34,7 +34,7 @@ export function CopyButton({ text, label = 'Copy Profile URL', className }: Copy
     <button
       onClick={handleCopy}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-md bg-secondary text-secondary-foreground px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        "inline-flex items-center justify-center gap-2 border-2 border-foreground bg-secondary text-secondary-foreground px-4 py-2 text-sm font-medium uppercase tracking-wider transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
         className,
       )}
       aria-label={copied ? 'Copied to clipboard' : label}

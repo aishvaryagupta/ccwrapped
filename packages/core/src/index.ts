@@ -95,3 +95,6 @@ export { validateUsername } from './username.js';
 // Pricing
 export { calculateLiveCost, fetchLivePricing, resetPricingCache } from './pricing.js';
 export type { LiveModelPricing } from './pricing.js';
+
+// Formatting
+export { formatCost, formatTokens } from './format.js';

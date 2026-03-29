@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -20,7 +21,9 @@ export const MAX_BACKFILL_DAYS = 30;
 
 // Payload
 export const SCHEMA_VERSION = 2;
-export const CLIENT_VERSION = '0.1.0';
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json') as { version: string };
+export const CLIENT_VERSION = pkg.version;
 
 // ccwrapped state
 export const CONFIG_DIR_NAME = 'ccwrapped';
@@ -28,10 +31,14 @@ export const STATE_FILE_NAME = 'state.json';
 export const MAX_SYNCED_SESSIONS = 500;
 
 // API
-export const API_BASE_URL = 'https://ccwrapped.dev/api';
-export const GOOGLE_CLIENT_ID = '266471192159-3nbjppkhkee2v6eur6vibribf7hhst0v.apps.googleusercontent.com';
-export const GOOGLE_CLIENT_SECRET = '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';
-export const HTTP_TIMEOUT_MS = 5000;
+export const API_BASE_URL = process.env.CCWRAPPED_API_BASE_URL ?? 'https://ccwrapped.dev/api';
+export const GOOGLE_CLIENT_ID =
+  process.env.CCWRAPPED_GOOGLE_CLIENT_ID ??
+  '266471192159-3nbjppkhkee2v6eur6vibribf7hhst0v.apps.googleusercontent.com';
+export const GOOGLE_CLIENT_SECRET =
+  process.env.CCWRAPPED_GOOGLE_CLIENT_SECRET ??
+  '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';
+export const HTTP_TIMEOUT_MS = 15_000;
 
 // Username validation
 export const USERNAME_MIN_LENGTH = 3;
