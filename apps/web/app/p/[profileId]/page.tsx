@@ -35,7 +35,7 @@ export default async function AnonymousProfilePage({ params }: Props) {
     <div className="border-2 border-foreground bg-card p-6 mb-8">
       <h2 className="font-bold uppercase text-sm mb-2">Claim this profile</h2>
       <p className="text-sm text-muted-foreground mb-4">
-        Sign in with Google to get a custom URL and share your stats.
+        Link your Google account to get a custom URL and share your stats.
       </p>
       <a href={`/api/auth/google?profile_id=${profileId}`}>
         <Button className="gap-2">
