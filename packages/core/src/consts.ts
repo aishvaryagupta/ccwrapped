@@ -1,4 +1,3 @@
-import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -21,9 +20,7 @@ export const MAX_BACKFILL_DAYS = 30;
 
 // Payload
 export const SCHEMA_VERSION = 2;
-const require = createRequire(import.meta.url);
-const pkg = require('../package.json') as { version: string };
-export const CLIENT_VERSION = pkg.version;
+export const CLIENT_VERSION = '0.3.2';
 
 // ccwrapped state
 export const CONFIG_DIR_NAME = 'ccwrapped';
