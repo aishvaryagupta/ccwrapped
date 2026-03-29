@@ -8,6 +8,7 @@ export const runtime = 'edge';
 const supabaseUrl = process.env.SUPABASE_URL ?? '';
 const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? '';
 
+// Duplicated from @ccwrapped/core — core has Node.js deps incompatible with edge runtime
 function formatTokens(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
@@ -66,7 +67,7 @@ export async function GET(
 
   const { data: stats } = await supabase
     .from('daily_stats')
-    .select('*')
+    .select('date, input_tokens, output_tokens, session_count, project_count, model_breakdowns')
     .eq('user_id', user.id)
     .gte('date', sinceDate)
     .order('date', { ascending: true });

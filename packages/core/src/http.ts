@@ -109,7 +109,7 @@ export async function fetchSyncMetadata(
   auth?: SyncAuth,
 ): Promise<HttpResult<SyncMetadata>> {
   try {
-    const res = await fetchWithRetry(`${baseUrl}/sync/metadata?date=${date}`, {
+    const res = await fetchWithRetry(`${baseUrl}/sync/metadata?date=${encodeURIComponent(date)}`, {
       headers: buildAuthHeaders(auth),
     });
 

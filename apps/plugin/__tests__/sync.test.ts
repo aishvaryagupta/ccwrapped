@@ -15,11 +15,9 @@ import {
   buildMachineId,
   buildSyncPayload,
   filterDaysForSync,
-  getAuthToken,
+  getSyncToken,
   isSessionSynced,
   parseTranscriptFile,
-  readState,
-  writeState,
 } from '@ccwrapped/core';
 
 describe('plugin sync logic', () => {
@@ -67,10 +65,10 @@ describe('plugin sync logic', () => {
     expect(isSessionSynced('sess-1', stateDir)).toBe(true);
   });
 
-  it('auth check: getAuthToken returns null when not configured', () => {
+  it('getSyncToken returns null when not configured', () => {
     const stateDir = join(tempDir, 'state2');
     mkdirSync(stateDir, { recursive: true });
-    expect(getAuthToken(stateDir)).toBeNull();
+    expect(getSyncToken(stateDir)).toBeNull();
   });
 
   it('filterDaysForSync passes valid payloads through', () => {

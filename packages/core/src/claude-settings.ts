@@ -1,11 +1,12 @@
 import {
   existsSync,
+  mkdirSync,
   readFileSync,
   renameSync,
   writeFileSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 const CLAUDE_SETTINGS_DIR = '.claude';
 const CLAUDE_SETTINGS_FILE = 'settings.json';
@@ -43,6 +44,7 @@ export function readClaudeSettings(overridePath?: string): ClaudeSettings {
 export function writeClaudeSettings(settings: ClaudeSettings, overridePath?: string): boolean {
   try {
     const file = getClaudeSettingsPath(overridePath);
+    mkdirSync(dirname(file), { recursive: true });
     const tmp = `${file}.tmp`;
     writeFileSync(tmp, JSON.stringify(settings, null, 2) + '\n', 'utf-8');
     renameSync(tmp, file);

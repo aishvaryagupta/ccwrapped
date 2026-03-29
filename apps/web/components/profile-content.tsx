@@ -237,7 +237,7 @@ export function ProfileContent({ user, stats, claimBanner }: ProfileContentProps
       {(totalFilesTouched > 0 || totalLinesWritten > 0) && (
         <div className="animate-slide-up mb-8" style={{ animationDelay: '240ms' }}>
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">CODE OUTPUT</h2>
-          <div className="border-2 border-foreground grid grid-cols-2 divide-x-2 divide-foreground">
+          <div className={`border-2 border-foreground grid ${totalFilesTouched > 0 && totalLinesWritten > 0 ? 'grid-cols-2 divide-x-2 divide-foreground' : 'grid-cols-1'}`}>
             {totalFilesTouched > 0 && (
               <StatCard label="Files Touched" value={formatTokens(totalFilesTouched)} />
             )}
@@ -258,39 +258,7 @@ export function ProfileContent({ user, stats, claimBanner }: ProfileContentProps
         {sortedModels.length > 0 && <ModelChart models={sortedModels} />}
         {sortedTools.length > 0 && <ToolChart tools={sortedTools} />}
 
-        {stats.length > 0 && (() => {
-          const last30 = stats.slice(-DAILY_TREND_DAYS);
-          const maxDay = Math.max(...last30.map((d) => d.inputTokens + d.outputTokens), 1);
-          return (
-            <div className="border-2 border-foreground bg-card p-4 sm:p-6">
-              <h3 className="text-sm font-medium text-muted-foreground mb-4">
-                Daily tokens (last {DAILY_TREND_DAYS} days)
-              </h3>
-              <div className="flex items-end gap-px h-28">
-                {last30.map((day, i) => {
-                  const tokens = day.inputTokens + day.outputTokens;
-                  const height = (tokens / maxDay) * 100;
-                  return (
-                    <div
-                      key={day.date}
-                      className="flex-1 bg-primary/70 hover:bg-primary min-h-[2px] transition-colors animate-grow-height"
-                      data-hover-guard=""
-                      style={{
-                        height: `${Math.max(height, 2)}%`,
-                        animationDelay: `${i * 10}ms`,
-                      }}
-                      title={`${day.date}: ${formatTokens(tokens)}`}
-                    />
-                  );
-                })}
-              </div>
-              <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                <span>{last30[0]?.date ?? ''}</span>
-                <span>{last30[last30.length - 1]?.date ?? ''}</span>
-              </div>
-            </div>
-          );
-        })()}
+        {stats.length > 0 && <DailyTrendChart stats={stats} />}
       </div>
 
       {/* Share section (only for claimed profiles) */}
@@ -308,6 +276,40 @@ export function ProfileContent({ user, stats, claimBanner }: ProfileContentProps
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function DailyTrendChart({ stats }: { stats: DayStats[] }) {
+  const last30 = stats.slice(-DAILY_TREND_DAYS);
+  const maxDay = Math.max(...last30.map((d) => d.inputTokens + d.outputTokens), 1);
+  return (
+    <div className="border-2 border-foreground bg-card p-4 sm:p-6">
+      <h3 className="text-sm font-medium text-muted-foreground mb-4">
+        Daily tokens (last {DAILY_TREND_DAYS} days)
+      </h3>
+      <div className="flex items-end gap-px h-28">
+        {last30.map((day, i) => {
+          const tokens = day.inputTokens + day.outputTokens;
+          const height = (tokens / maxDay) * 100;
+          return (
+            <div
+              key={day.date}
+              className="flex-1 bg-primary/70 hover:bg-primary min-h-[2px] transition-colors animate-grow-height"
+              data-hover-guard=""
+              style={{
+                height: `${Math.max(height, 2)}%`,
+                animationDelay: `${i * 10}ms`,
+              }}
+              title={`${day.date}: ${formatTokens(tokens)}`}
+            />
+          );
+        })}
+      </div>
+      <div className="flex justify-between text-xs text-muted-foreground mt-2">
+        <span>{last30[0]?.date ?? ''}</span>
+        <span>{last30[last30.length - 1]?.date ?? ''}</span>
+      </div>
     </div>
   );
 }

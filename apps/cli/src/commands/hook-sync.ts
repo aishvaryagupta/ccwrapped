@@ -2,7 +2,6 @@ import {
   API_BASE_URL,
   CLIENT_VERSION,
   addSyncedSession,
-  buildMachineId,
   buildSyncPayload,
   filterDaysForSync,
   getSyncToken,
@@ -10,6 +9,7 @@ import {
   parseTranscriptFile,
   postSyncPayload,
   readState,
+  type HookInput,
 } from '@ccwrapped/core';
 
 export async function run(): Promise<void> {
@@ -18,7 +18,7 @@ export async function run(): Promise<void> {
     chunks.push(chunk as Buffer);
   }
 
-  let hookInput: { session_id?: string; transcript_path?: string };
+  let hookInput: Partial<HookInput>;
   try {
     hookInput = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
   } catch {
@@ -38,8 +38,7 @@ export async function run(): Promise<void> {
   if (entries.length === 0) return;
 
   const state = readState();
-  const machineId = state.machine_id || buildMachineId();
-  const payload = buildSyncPayload(entries, machineId, CLIENT_VERSION);
+  const payload = buildSyncPayload(entries, state.machine_id, CLIENT_VERSION);
   const { payload: filtered } = filterDaysForSync(payload);
   if (filtered.days.length === 0) return;
 

@@ -51,6 +51,9 @@ function copyToClipboard(text: string): void {
   }
 
   const proc = spawn(cmd, args, { stdio: ['pipe', 'ignore', 'ignore'] });
+  proc.on('error', () => {
+    // Clipboard command not available — ignore silently
+  });
   proc.stdin.write(text);
   proc.stdin.end();
 }

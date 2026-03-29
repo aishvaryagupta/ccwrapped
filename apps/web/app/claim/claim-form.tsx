@@ -68,7 +68,7 @@ export function ClaimForm() {
           type="text"
           value={username}
           onChange={(e) => {
-            const v = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+            const v = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/^-+/, '');
             setUsername(v);
             setError(null);
           }}
@@ -94,7 +94,7 @@ export function ClaimForm() {
       </Button>
 
       <p className="text-xs text-muted-foreground">
-        3-30 characters. Letters, numbers, and hyphens only.
+        3-30 characters. Letters, numbers, and hyphens only. Must start and end with a letter or number.
       </p>
     </form>
   );

@@ -49,9 +49,11 @@ try {
       printHelp();
       break;
     case '--version':
-    case '-v':
-      console.log('ccwrapped 0.4.0');
+    case '-v': {
+      const { CLIENT_VERSION } = await import('@ccwrapped/core');
+      console.log(`ccwrapped ${CLIENT_VERSION}`);
       break;
+    }
     default:
       console.error(`Unknown command: ${command}`);
       console.error();

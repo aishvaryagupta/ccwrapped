@@ -1,6 +1,7 @@
 import {
   API_BASE_URL,
   CLIENT_VERSION,
+  MAX_SYNCED_SESSIONS,
   buildMachineId,
   buildSyncPayload,
   fetchLivePricing,
@@ -17,7 +18,7 @@ import {
 } from '@ccwrapped/core';
 import { createInterface } from 'node:readline';
 import { openUrl } from '../browser.js';
-import { bold, dim, formatCost, formatTokens, green, red, yellow, printTable } from '../ui.js';
+import { SYNC_ERROR_MESSAGES, bold, dim, formatCost, formatTokens, green, red, yellow, printTable } from '../ui.js';
 
 export async function run(flags: string[]): Promise<void> {
   if (flags.includes('--local')) {
@@ -36,8 +37,7 @@ export async function run(flags: string[]): Promise<void> {
 
   // 2. Show brief terminal stats
   const state = readState();
-  const machineId = state.machine_id || buildMachineId();
-  const previewPayload = buildSyncPayload(entries, machineId, CLIENT_VERSION);
+  const previewPayload = buildSyncPayload(entries, state.machine_id, CLIENT_VERSION);
   const totalTokens = previewPayload.days.reduce((s, d) => s + d.inputTokens + d.outputTokens, 0);
   const totalCost = previewPayload.days.reduce((s, d) => s + d.costUSD, 0);
   const totalSessions = previewPayload.days.reduce((s, d) => s + d.sessionCount, 0);
@@ -70,13 +70,7 @@ export async function run(flags: string[]): Promise<void> {
   const result = await postSyncPayload(API_BASE_URL, filtered, auth);
 
   if (!result.ok) {
-    const messages: Record<string, string> = {
-      network: 'Could not reach ccwrapped.dev.',
-      auth: 'Sync token invalid. Run "npx ccwrapdev" to re-sync.',
-      server: 'Server error. Try again later.',
-      validation: 'Invalid payload.',
-    };
-    console.log(red(result.message ?? messages[result.error] ?? 'Sync failed.'));
+    console.log(red(result.message ?? SYNC_ERROR_MESSAGES[result.error] ?? 'Sync failed.'));
     process.exitCode = 1;
     return;
   }
@@ -108,8 +102,8 @@ export async function run(flags: string[]): Promise<void> {
     if (!existingSessions.has(sid)) postState.synced_sessions.push(sid);
   }
   // FIFO eviction to cap synced_sessions
-  if (postState.synced_sessions.length > 500) {
-    postState.synced_sessions = postState.synced_sessions.slice(-500);
+  if (postState.synced_sessions.length > MAX_SYNCED_SESSIONS) {
+    postState.synced_sessions = postState.synced_sessions.slice(-MAX_SYNCED_SESSIONS);
   }
   postState.last_sync = new Date().toISOString();
 
@@ -133,7 +127,7 @@ export async function run(flags: string[]): Promise<void> {
   }
 
   // 7. Auto-sync setup
-  if (!isCcwrappedHookInstalled()) {
+  if (!isCcwrappedHookInstalled() && process.stdin.isTTY) {
     console.log();
     console.log(bold('Auto-sync'));
     console.log('Automatically sync stats after every Claude Code session?');

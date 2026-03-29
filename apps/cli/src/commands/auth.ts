@@ -4,7 +4,7 @@ import { dim, green, yellow } from '../ui.js';
 export async function run(flags: string[]): Promise<void> {
   if (flags.includes('--logout')) {
     clearState();
-    console.log(green('Logged out. Auth credentials removed.'));
+    console.log(green('Logged out. Local data cleared.'));
     console.log(dim('Your sync token and profile are preserved.'));
     return;
   }

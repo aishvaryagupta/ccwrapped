@@ -76,15 +76,15 @@ describe('status command', () => {
   it('readState returns defaults for missing config', async () => {
     const { readState } = await import('@ccwrapped/core');
     const state = readState(tempDir);
-    expect(state.auth_token).toBeNull();
+    expect(state.sync_token).toBeNull();
     expect(state.synced_sessions).toEqual([]);
   });
 
-  it('readState reflects setAuthToken', async () => {
-    const { readState, setAuthToken } = await import('@ccwrapped/core');
-    setAuthToken('ya29_test', '1//refresh', 3600, tempDir);
+  it('readState reflects setSyncToken', async () => {
+    const { readState, setSyncToken } = await import('@ccwrapped/core');
+    setSyncToken('tok_test', 'prof-123', tempDir);
     const state = readState(tempDir);
-    expect(state.auth_token).toBe('ya29_test');
-    expect(state.refresh_token).toBe('1//refresh');
+    expect(state.sync_token).toBe('tok_test');
+    expect(state.profile_id).toBe('prof-123');
   });
 });

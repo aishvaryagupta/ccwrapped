@@ -54,11 +54,11 @@ function findPricing(
     if (pricing.has(key)) return pricing.get(key)!;
   }
 
-  // Substring match — find the longest key that matches
+  // Prefix match — find the longest key that is a prefix of modelName
   let best: LiveModelPricing | null = null;
   let bestLen = 0;
   for (const [key, value] of pricing) {
-    if (modelName.includes(key) || key.includes(modelName)) {
+    if (modelName.startsWith(key) || key.startsWith(modelName)) {
       if (key.length > bestLen) {
         best = value;
         bestLen = key.length;

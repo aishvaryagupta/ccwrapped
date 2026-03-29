@@ -10,6 +10,13 @@ export const red = (s: string) => `${ESC}31m${s}${ESC}0m`;
 
 export { formatCost, formatTokens };
 
+export const SYNC_ERROR_MESSAGES: Record<string, string> = {
+  network: 'Could not reach ccwrapped.dev.',
+  auth: 'Sync token invalid. Run "npx ccwrapdev" to re-sync.',
+  server: 'Server error. Try again later.',
+  validation: 'Invalid payload.',
+};
+
 export function padRight(s: string, len: number): string {
   return s + ' '.repeat(Math.max(0, len - s.length));
 }
