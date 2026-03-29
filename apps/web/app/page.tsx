@@ -93,7 +93,7 @@ export default function LandingPage() {
           <p className="text-muted-foreground"># Inside Claude Code</p>
           <p className="text-foreground">
             <span className="text-primary" aria-hidden="true">$</span> /plugin marketplace add
-            aishvaryagupta/ccwrapped-plugin
+            https://github.com/aishvaryagupta/ccwrapped-plugin.git
           </p>
           <p className="text-foreground">
             <span className="text-primary" aria-hidden="true">$</span> /plugin install ccwrapped
@@ -101,7 +101,7 @@ export default function LandingPage() {
           <div className="border-t-2 border-foreground my-4" />
           <p className="text-muted-foreground"># Or try the CLI first</p>
           <p className="text-foreground">
-            <span className="text-primary" aria-hidden="true">$</span> npx ccwrapped
+            <span className="text-primary" aria-hidden="true">$</span> npx ccwrapdev
           </p>
         </div>
       </section>
