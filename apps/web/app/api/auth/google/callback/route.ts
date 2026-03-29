@@ -3,13 +3,8 @@ import { NextResponse } from 'next/server';
 import { verifySignedValue, signValue } from '@/lib/cookies';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
-const GOOGLE_CLIENT_ID =
-  process.env.CCWRAPPED_GOOGLE_CLIENT_ID ??
-  '266471192159-3nbjppkhkee2v6eur6vibribf7hhst0v.apps.googleusercontent.com';
-
-const GOOGLE_CLIENT_SECRET =
-  process.env.CCWRAPPED_GOOGLE_CLIENT_SECRET ??
-  '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';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID ?? '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_WEB_CLIENT_SECRET ?? '';
 
 const REDIRECT_URI =
   process.env.GOOGLE_REDIRECT_URI ?? 'https://ccwrapped.dev/api/auth/google/callback';

@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server';
 import { signValue, generateNonce } from '@/lib/cookies';
 import { generateCodeVerifier, generateCodeChallenge } from '@/lib/pkce';
 
-const GOOGLE_CLIENT_ID =
-  process.env.CCWRAPPED_GOOGLE_CLIENT_ID ??
-  '266471192159-3nbjppkhkee2v6eur6vibribf7hhst0v.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID ?? '';
 
 const REDIRECT_URI =
   process.env.GOOGLE_REDIRECT_URI ?? 'https://ccwrapped.dev/api/auth/google/callback';
