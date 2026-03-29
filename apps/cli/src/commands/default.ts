@@ -11,7 +11,6 @@ import {
   postSyncPayload,
   readState,
   scanAllFiles,
-  setSyncToken,
   writeState,
   type DaySummary,
   type SyncAuth,
@@ -82,42 +81,48 @@ export async function run(flags: string[]): Promise<void> {
     return;
   }
 
-  // 5. Store sync_token if returned (first sync or migration)
+  // 5. Guard: first anonymous sync must return a sync_token
+  if (!auth && !result.data.sync_token) {
+    console.log(red('Sync succeeded but no token was returned. Try again.'));
+    process.exitCode = 1;
+    return;
+  }
+
+  // 6. Single read → mutate all fields → single write
+  const postState = readState();
+
   if (result.data.sync_token) {
-    const profileId = result.data.profile_url?.split('/p/')[1] ?? '';
-    setSyncToken(result.data.sync_token, profileId);
+    postState.sync_token = result.data.sync_token;
+    // Extract profile_id from URL, with guard
+    const profileMatch = result.data.profile_url?.match(/\/p\/([a-f0-9-]+)/);
+    if (profileMatch) postState.profile_id = profileMatch[1];
   }
 
-  // Store username if returned (claimed on web)
   if (result.data.username) {
-    const updatedState = readState();
-    updatedState.username = result.data.username;
-    writeState(updatedState);
+    postState.username = result.data.username;
   }
 
-  // Mark sessions as synced
   const sessionIds = [...new Set(entries.map((e) => e.sessionId).filter(Boolean))] as string[];
-  const updatedState = readState();
-  const existing = new Set(updatedState.synced_sessions);
+  const existingSessions = new Set(postState.synced_sessions);
   for (const sid of sessionIds) {
-    if (!existing.has(sid)) updatedState.synced_sessions.push(sid);
+    if (!existingSessions.has(sid)) postState.synced_sessions.push(sid);
   }
-  updatedState.last_sync = new Date().toISOString();
-  writeState(updatedState);
+  postState.last_sync = new Date().toISOString();
 
-  // 6. Done
+  writeState(postState);
+
+  // 7. Done
   console.log();
   console.log(green(`Synced ${filtered.days.length} day(s)`));
 
-  const currentState = readState();
-  const profileUrl = currentState.username
-    ? `https://ccwrapped.dev/${currentState.username}`
+  const profileUrl = postState.username
+    ? `https://ccwrapped.dev/${postState.username}`
     : result.data.profile_url;
 
   if (profileUrl) {
     console.log();
     console.log(`View your stats: ${profileUrl}`);
-    if (!currentState.username) {
+    if (!postState.username) {
       console.log(dim('Claim a username at the link above to get a custom URL.'));
     }
     openUrl(profileUrl);
