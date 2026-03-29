@@ -65,6 +65,30 @@ export async function fetchUserProfile(
   };
 }
 
+export async function fetchUserByProfileId(
+  profileId: string,
+): Promise<UserProfile | null> {
+  const supabase = getClient();
+  const { data } = await supabase
+    .from('users')
+    .select('id, username, display_name, avatar_url, created_at, github_url, twitter_url, website_url')
+    .like('id', `${profileId}%`)
+    .single();
+
+  if (!data) return null;
+
+  return {
+    id: data.id,
+    username: data.username,
+    displayName: data.display_name,
+    avatarUrl: data.avatar_url,
+    createdAt: data.created_at,
+    githubUrl: data.github_url ?? null,
+    twitterUrl: data.twitter_url ?? null,
+    websiteUrl: data.website_url ?? null,
+  };
+}
+
 export async function fetchUserStats(userId: string): Promise<DayStats[]> {
   const supabase = getClient();
   const { data } = await supabase
