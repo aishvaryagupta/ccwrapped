@@ -1,13 +1,11 @@
 import {
   API_BASE_URL,
   CLIENT_VERSION,
-  GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
   addSyncedSession,
   buildMachineId,
   buildSyncPayload,
   filterDaysForSync,
-  getValidToken,
+  getSyncToken,
   isSessionSynced,
   parseTranscriptFile,
   postSyncPayload,
@@ -33,8 +31,8 @@ export async function run(): Promise<void> {
 
   if (isSessionSynced(sessionId)) return;
 
-  const token = await getValidToken(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
-  if (!token) return;
+  const syncToken = getSyncToken();
+  if (!syncToken) return;
 
   const entries = await parseTranscriptFile(transcriptPath);
   if (entries.length === 0) return;
@@ -45,7 +43,7 @@ export async function run(): Promise<void> {
   const { payload: filtered } = filterDaysForSync(payload);
   if (filtered.days.length === 0) return;
 
-  const result = await postSyncPayload(API_BASE_URL, token, filtered);
+  const result = await postSyncPayload(API_BASE_URL, filtered, { syncToken });
   if (!result.ok) return;
 
   addSyncedSession(sessionId);

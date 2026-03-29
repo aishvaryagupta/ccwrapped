@@ -7,11 +7,20 @@ export async function run(_flags: string[]): Promise<void> {
   console.log(bold('ccwrapped status'));
   console.log();
 
-  // Auth
-  if (state.auth_token) {
-    console.log(`  Auth:       ${green(state.username ? `@${state.username}` : 'Authenticated (no username yet)')}`);
+  // Profile
+  if (state.username) {
+    console.log(`  Profile:    ${green(`@${state.username}`)}`);
+  } else if (state.sync_token) {
+    console.log(`  Profile:    ${yellow('Unclaimed')}  ${dim('Claim at your profile page')}`);
   } else {
-    console.log(`  Auth:       ${red('Not authenticated')}`);
+    console.log(`  Profile:    ${red('Not synced')}`);
+  }
+
+  // Sync token
+  if (state.sync_token) {
+    console.log(`  Sync:       ${green('Connected')}`);
+  } else {
+    console.log(`  Sync:       ${dim('Not set up')}`);
   }
 
   // Last sync

@@ -1,100 +1,31 @@
 import {
   API_BASE_URL,
   CLIENT_VERSION,
-  GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
   buildMachineId,
   buildSyncPayload,
   fetchLivePricing,
-  fetchSyncMetadata,
   filterDaysForSync,
-  getValidToken,
+  getSyncToken,
   isCcwrappedHookInstalled,
   installCcwrappedHook,
-  pollForToken,
   postSyncPayload,
   readState,
   scanAllFiles,
-  setAuthToken,
-  setUsername,
-  startDeviceFlow,
+  setSyncToken,
   writeState,
   type DaySummary,
+  type SyncAuth,
 } from '@ccwrapped/core';
 import { createInterface } from 'node:readline';
 import { openUrl } from '../browser.js';
 import { bold, dim, formatCost, formatTokens, green, red, yellow, printTable } from '../ui.js';
-import { promptForUsername } from './prompt-username.js';
 
 export async function run(flags: string[]): Promise<void> {
   if (flags.includes('--local')) {
     return showLocalStats();
   }
 
-  // 1. Auth
-  let token = await getValidToken(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
-  if (!token) {
-    console.log(bold('ccwrapped') + dim(' — setup'));
-    console.log();
-
-    if (!GOOGLE_CLIENT_ID) {
-      console.log(yellow('Authentication is not yet configured.'));
-      return;
-    }
-
-    const deviceCode = await startDeviceFlow(GOOGLE_CLIENT_ID);
-    if (!deviceCode) {
-      console.log(red('Failed to start authentication. Check your network.'));
-      process.exitCode = 1;
-      return;
-    }
-
-    console.log(`! First, copy your one-time code: ${bold(deviceCode.user_code)}`);
-    console.log();
-    console.log(`Opening ${deviceCode.verification_url} ...`);
-    openUrl(deviceCode.verification_url);
-    console.log();
-    console.log('Waiting for authorization...');
-
-    const result = await pollForToken(
-      GOOGLE_CLIENT_ID,
-      GOOGLE_CLIENT_SECRET,
-      deviceCode.device_code,
-      deviceCode.interval,
-    );
-
-    if (!result.ok) {
-      const messages: Record<string, string> = {
-        expired: 'Code expired. Run again.',
-        denied: 'Authorization denied.',
-        network: 'Network error during authorization.',
-        not_configured: 'Auth not configured.',
-      };
-      console.log(red(messages[result.error] ?? 'Unknown error.'));
-      process.exitCode = 1;
-      return;
-    }
-
-    setAuthToken(result.token, result.refreshToken, result.expiresIn);
-    token = result.token;
-    console.log(green(`Authenticated as ${result.email}`));
-    console.log();
-  }
-
-  // 2. Username
-  const state = readState();
-  if (!state.username) {
-    const claimed = await promptForUsername(token);
-    if (!claimed) {
-      process.exitCode = 1;
-      return;
-    }
-    setUsername(claimed);
-    console.log(green(`Username set: @${claimed}`));
-    console.log();
-  }
-
-  // 3. Scan
+  // 1. Scan
   console.log('Scanning Claude Code logs...');
   const entries = await scanAllFiles();
 
@@ -104,10 +35,20 @@ export async function run(flags: string[]): Promise<void> {
     return;
   }
 
-  // 4. Build + filter
+  // 2. Show brief terminal stats
+  const state = readState();
   const machineId = state.machine_id || buildMachineId();
-  const payload = buildSyncPayload(entries, machineId, CLIENT_VERSION);
-  const { payload: filtered, filtered: dropped } = filterDaysForSync(payload);
+  const previewPayload = buildSyncPayload(entries, machineId, CLIENT_VERSION);
+  const totalTokens = previewPayload.days.reduce((s, d) => s + d.inputTokens + d.outputTokens, 0);
+  const totalCost = previewPayload.days.reduce((s, d) => s + d.costUSD, 0);
+  const totalSessions = previewPayload.days.reduce((s, d) => s + d.sessionCount, 0);
+
+  console.log();
+  console.log(`  ${bold(formatTokens(totalTokens))} tokens  ${bold(String(totalSessions))} sessions  ${bold(formatCost(totalCost))} cost`);
+  console.log();
+
+  // 3. Build + filter payload
+  const { payload: filtered, filtered: dropped } = filterDaysForSync(previewPayload);
 
   if (dropped.length > 0) {
     console.log(yellow(`Filtered ${dropped.length} day(s):`));
@@ -122,34 +63,36 @@ export async function run(flags: string[]): Promise<void> {
     return;
   }
 
-  // 5. Conflict detection
-  const todayDate = new Date().toISOString().slice(0, 10);
-  const metadata = await fetchSyncMetadata(API_BASE_URL, token, todayDate);
-  if (metadata.ok && metadata.data.machine_id && metadata.data.machine_id !== machineId) {
-    console.log(yellow('Warning: Last sync was from a different machine.'));
-    console.log(dim(`  Last: ${metadata.data.machine_id}  This: ${machineId}`));
-    console.log();
-  }
-
-  // 6. Upload
-  const totalTokens = filtered.days.reduce(
-    (s, d) => s + d.inputTokens + d.outputTokens, 0,
-  );
-  const totalCost = filtered.days.reduce((s, d) => s + d.costUSD, 0);
+  // 4. Sync (with sync_token or anonymous)
+  const syncToken = getSyncToken();
+  const auth: SyncAuth | undefined = syncToken ? { syncToken } : undefined;
 
   console.log(`Syncing ${filtered.days.length} day(s)...`);
-  const result = await postSyncPayload(API_BASE_URL, token, filtered);
+  const result = await postSyncPayload(API_BASE_URL, filtered, auth);
 
   if (!result.ok) {
-    const fallback: Record<string, string> = {
+    const messages: Record<string, string> = {
       network: 'Could not reach ccwrapped.dev.',
-      auth: 'Auth failed. Run "ccwrapped auth" to re-authenticate.',
+      auth: 'Sync token invalid. Run "npx ccwrapdev" to re-sync.',
       server: 'Server error. Try again later.',
       validation: 'Invalid payload.',
     };
-    console.log(red(result.message ?? fallback[result.error] ?? 'Sync failed.'));
+    console.log(red(result.message ?? messages[result.error] ?? 'Sync failed.'));
     process.exitCode = 1;
     return;
+  }
+
+  // 5. Store sync_token if returned (first sync or migration)
+  if (result.data.sync_token) {
+    const profileId = result.data.profile_url?.split('/p/')[1] ?? '';
+    setSyncToken(result.data.sync_token, profileId);
+  }
+
+  // Store username if returned (claimed on web)
+  if (result.data.username) {
+    const updatedState = readState();
+    updatedState.username = result.data.username;
+    writeState(updatedState);
   }
 
   // Mark sessions as synced
@@ -162,20 +105,25 @@ export async function run(flags: string[]): Promise<void> {
   updatedState.last_sync = new Date().toISOString();
   writeState(updatedState);
 
-  // 7. Done
+  // 6. Done
   console.log();
   console.log(green(`Synced ${filtered.days.length} day(s)`));
-  console.log(`  ${formatTokens(totalTokens)} tokens  ${formatCost(totalCost)}`);
 
   const currentState = readState();
-  if (currentState.username) {
-    const url = `https://ccwrapped.dev/${currentState.username}`;
+  const profileUrl = currentState.username
+    ? `https://ccwrapped.dev/${currentState.username}`
+    : result.data.profile_url;
+
+  if (profileUrl) {
     console.log();
-    console.log(`View your profile: ${url}`);
-    openUrl(url);
+    console.log(`View your stats: ${profileUrl}`);
+    if (!currentState.username) {
+      console.log(dim('Claim a username at the link above to get a custom URL.'));
+    }
+    openUrl(profileUrl);
   }
 
-  // 8. Auto-sync setup
+  // 7. Auto-sync setup
   if (!isCcwrappedHookInstalled()) {
     console.log();
     console.log(bold('Auto-sync'));
@@ -190,8 +138,8 @@ export async function run(flags: string[]): Promise<void> {
     rl.close();
 
     if (answer.trim().toLowerCase() !== 'n') {
-      const result = installCcwrappedHook();
-      if (result.installed) {
+      const hookResult = installCcwrappedHook();
+      if (hookResult.installed) {
         console.log(green('Auto-sync enabled! Stats will sync after every session.'));
       } else {
         console.log(yellow('Could not write to ~/.claude/settings.json.'));
@@ -204,7 +152,7 @@ export async function run(flags: string[]): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Local stats (--local flag, old default behavior)
+// Local stats (--local flag)
 // ---------------------------------------------------------------------------
 
 async function showLocalStats(): Promise<void> {
@@ -313,4 +261,3 @@ function aggregate(days: DaySummary[]): DaySummary {
     modelBreakdowns: [],
   };
 }
-

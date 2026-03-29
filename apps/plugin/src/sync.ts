@@ -1,13 +1,11 @@
 import {
   API_BASE_URL,
   CLIENT_VERSION,
-  GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
   addSyncedSession,
   buildMachineId,
   buildSyncPayload,
   filterDaysForSync,
-  getValidToken,
+  getSyncToken,
   isSessionSynced,
   parseTranscriptFile,
   postSyncPayload,
@@ -35,11 +33,11 @@ async function main(): Promise<void> {
   // Idempotency: skip if already synced
   if (isSessionSynced(sessionId)) return;
 
-  // Check auth (auto-refreshes expired tokens)
-  const token = await getValidToken(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
-  if (!token) {
+  // Check for sync token
+  const syncToken = getSyncToken();
+  if (!syncToken) {
     process.stderr.write(
-      'ccwrapped: Run "npx ccwrapped auth" to connect your Google account.\n',
+      'ccwrapped: Run "npx ccwrapdev" to set up sync.\n',
     );
     return;
   }
@@ -56,7 +54,7 @@ async function main(): Promise<void> {
   if (filtered.days.length === 0) return;
 
   // POST to API
-  const result = await postSyncPayload(API_BASE_URL, token, filtered);
+  const result = await postSyncPayload(API_BASE_URL, filtered, { syncToken });
   if (!result.ok) return;
 
   // Record synced session

@@ -1,20 +1,24 @@
 import { spawn } from 'node:child_process';
 import { platform } from 'node:os';
-import { readState, getAuthToken } from '@ccwrapped/core';
+import { readState } from '@ccwrapped/core';
 import { openUrl } from '../browser.js';
-import { green, red } from '../ui.js';
+import { dim, green, red } from '../ui.js';
 
 export async function run(flags: string[]): Promise<void> {
   const state = readState();
 
-  if (!getAuthToken() || !state.username) {
+  const url = state.username
+    ? `https://ccwrapped.dev/${state.username}`
+    : state.profile_id
+      ? `https://ccwrapped.dev/p/${state.profile_id}`
+      : null;
+
+  if (!url) {
     console.log(red('No profile yet.'));
-    console.log('Run "ccwrapped auth" then "ccwrapped sync" to set up your profile.');
+    console.log('Run "npx ccwrapdev" to sync your stats first.');
     process.exitCode = 1;
     return;
   }
-
-  const url = `https://ccwrapped.dev/${state.username}`;
 
   if (flags.includes('--copy')) {
     copyToClipboard(url);
@@ -23,6 +27,10 @@ export async function run(flags: string[]): Promise<void> {
   } else {
     openUrl(url);
     console.log(`Opening ${url} ...`);
+  }
+
+  if (!state.username) {
+    console.log(dim('Claim a username at your profile page to get a custom URL.'));
   }
 }
 

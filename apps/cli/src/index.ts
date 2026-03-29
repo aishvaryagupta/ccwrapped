@@ -78,20 +78,19 @@ function printHelp() {
   console.log('Usage: ccwrapped [command] [options]');
   console.log();
   console.log('Commands:');
-  console.log('  (default)        Auth + scan + sync + auto-sync setup');
+  console.log('  (default)        Scan + sync stats (no auth needed)');
   console.log('  (default) --local  Show local usage summary');
-  console.log('  auth             Authenticate with Google');
-  console.log('  auth --logout    Remove stored credentials');
-  console.log('  sync             Sync stats to ccwrapped.dev');
-  console.log('  sync --minimal   Upload tokens only (no model/session data)');
+  console.log('  sync             Manual sync to ccwrapped.dev');
+  console.log('  sync --minimal   Sync without model data');
   console.log('  setup            Enable auto-sync after every session');
   console.log('  setup --remove   Remove auto-sync hook');
   console.log('  setup --check    Check auto-sync status');
   console.log('  card             Open your profile in browser');
   console.log('  card --copy      Copy profile URL to clipboard');
   console.log('  status           Show sync status and config');
+  console.log('  auth --logout    Clear stored auth credentials');
   console.log('  help             Show this help message');
   console.log();
   console.log('Get started:');
-  console.log('  npx ccwrapdev    # One command does everything');
+  console.log('  npx ccwrapdev    # Scan, sync, done. No auth required.');
 }

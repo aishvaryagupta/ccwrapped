@@ -1,49 +1,33 @@
 import {
   API_BASE_URL,
   CLIENT_VERSION,
-  GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
   buildMachineId,
   buildSyncPayload,
   fetchSyncMetadata,
   filterDaysForSync,
-  getValidToken,
+  getSyncToken,
   postSyncPayload,
   readState,
   scanAllFiles,
-  setUsername,
+  setSyncToken,
   writeState,
+  type SyncAuth,
 } from '@ccwrapped/core';
 import { bold, dim, formatCost, formatTokens, green, red, yellow } from '../ui.js';
-import { promptForUsername } from './prompt-username.js';
 
 export async function run(flags: string[]): Promise<void> {
   const minimal = flags.includes('--minimal');
 
-  // Check auth (auto-refreshes expired tokens)
-  const token = await getValidToken(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
-  if (!token) {
-    console.log(red('Not authenticated.'));
-    console.log('Run "ccwrapped auth" first.');
+  const syncToken = getSyncToken();
+  if (!syncToken) {
+    console.log(yellow('No sync token found.'));
+    console.log('Run "npx ccwrapdev" first to set up.');
     process.exitCode = 1;
     return;
   }
 
   console.log(bold('ccwrapped sync'));
   console.log();
-
-  // Username picking on first sync
-  const state = readState();
-  if (!state.username) {
-    const claimed = await promptForUsername(token);
-    if (!claimed) {
-      process.exitCode = 1;
-      return;
-    }
-    setUsername(claimed);
-    console.log(green(`Username set: @${claimed}`));
-    console.log();
-  }
 
   // Scan all files
   console.log('Scanning Claude Code logs...');
@@ -55,6 +39,7 @@ export async function run(flags: string[]): Promise<void> {
   }
 
   // Build payload
+  const state = readState();
   const machineId = state.machine_id || buildMachineId();
   let payload = buildSyncPayload(entries, machineId, CLIENT_VERSION);
 
@@ -89,12 +74,11 @@ export async function run(flags: string[]): Promise<void> {
 
   // Conflict detection
   const todayDate = new Date().toISOString().slice(0, 10);
-  const metadata = await fetchSyncMetadata(API_BASE_URL, token, todayDate);
+  const auth: SyncAuth = { syncToken };
+  const metadata = await fetchSyncMetadata(API_BASE_URL, todayDate, auth);
   if (metadata.ok && metadata.data.machine_id && metadata.data.machine_id !== machineId) {
-    console.log(yellow(`Warning: Last sync was from a different machine.`));
-    console.log(dim(`  Last sync machine: ${metadata.data.machine_id}`));
-    console.log(dim(`  This machine:      ${machineId}`));
-    console.log(dim('  Syncing will overwrite. Proceed with caution.'));
+    console.log(yellow('Warning: Last sync was from a different machine.'));
+    console.log(dim(`  Last: ${metadata.data.machine_id}  This: ${machineId}`));
     console.log();
   }
 
@@ -106,28 +90,33 @@ export async function run(flags: string[]): Promise<void> {
   const totalCost = filtered.days.reduce((s, d) => s + d.costUSD, 0);
 
   console.log(`Syncing ${filtered.days.length} day(s)...`);
-  const result = await postSyncPayload(API_BASE_URL, token, filtered);
+  const result = await postSyncPayload(API_BASE_URL, filtered, auth);
 
   if (!result.ok) {
     const messages: Record<string, string> = {
-      network: 'Could not reach ccwrapped.dev. The API may not be available yet.',
-      auth: 'Authentication failed. Run "ccwrapped auth" to re-authenticate.',
+      network: 'Could not reach ccwrapped.dev.',
+      auth: 'Sync token invalid. Run "npx ccwrapdev" to re-sync.',
       server: 'Server error. Try again later.',
       validation: 'Invalid payload.',
     };
-    console.log(red(messages[result.error] ?? 'Sync failed.'));
+    console.log(red(result.message ?? messages[result.error] ?? 'Sync failed.'));
     process.exitCode = 1;
     return;
   }
 
-  // Mark all sessions as synced (batch write)
+  // Store username if returned
+  if (result.data.username) {
+    const updatedState = readState();
+    updatedState.username = result.data.username;
+    writeState(updatedState);
+  }
+
+  // Mark sessions as synced
   const sessionIds = [...new Set(entries.map((e) => e.sessionId).filter(Boolean))] as string[];
   const updatedState = readState();
   const existing = new Set(updatedState.synced_sessions);
   for (const sid of sessionIds) {
-    if (!existing.has(sid)) {
-      updatedState.synced_sessions.push(sid);
-    }
+    if (!existing.has(sid)) updatedState.synced_sessions.push(sid);
   }
   updatedState.last_sync = new Date().toISOString();
   writeState(updatedState);
@@ -140,6 +129,8 @@ export async function run(flags: string[]): Promise<void> {
   if (currentState.username) {
     console.log();
     console.log(`View your profile: https://ccwrapped.dev/${currentState.username}`);
+  } else if (result.data.profile_url) {
+    console.log();
+    console.log(`View your stats: ${result.data.profile_url}`);
   }
 }
-
