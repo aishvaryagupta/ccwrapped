@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Coins, Hash, FolderOpen, DollarSign, Download, Calendar, FileCode, PenLine } from 'lucide-react';
+import { Coins, Hash, FolderOpen, DollarSign, Download, Calendar, FileCode, PenLine, ArrowDownToLine, ArrowUpFromLine, DatabaseZap, BookOpen, Flame, Globe } from 'lucide-react';
 import { CopyButton } from '@/components/copy-button';
 import { Heatmap } from '@/components/heatmap';
 import { ModelChart } from '@/components/model-chart';
@@ -49,6 +49,8 @@ export default async function ProfilePage({ params }: Props) {
   // Aggregate totals
   let totalInput = 0;
   let totalOutput = 0;
+  let totalCacheCreation = 0;
+  let totalCacheRead = 0;
   let totalSessions = 0;
   let totalProjects = 0;
   let totalCost = 0;
@@ -60,6 +62,8 @@ export default async function ProfilePage({ params }: Props) {
   for (const day of stats) {
     totalInput += day.inputTokens;
     totalOutput += day.outputTokens;
+    totalCacheCreation += day.cacheCreationTokens;
+    totalCacheRead += day.cacheReadTokens;
     totalSessions += day.sessionCount;
     totalProjects += day.projectCount;
     totalCost += day.costUsd;
@@ -132,6 +136,37 @@ export default async function ProfilePage({ params }: Props) {
 
   const activeDays = stats.length;
 
+  // Compute streaks
+  const dateSet = new Set(stats.map((d) => d.date));
+  let currentStreak = 0;
+  {
+    const d = new Date(now);
+    while (true) {
+      const dateStr = d.toISOString().slice(0, 10);
+      if (!dateSet.has(dateStr)) break;
+      currentStreak++;
+      d.setDate(d.getDate() - 1);
+    }
+  }
+  let longestStreak = 0;
+  {
+    const sortedDates = [...dateSet].sort();
+    let run = 1;
+    for (let i = 1; i < sortedDates.length; i++) {
+      const prev = new Date(sortedDates[i - 1]);
+      const curr = new Date(sortedDates[i]);
+      const diffDays = (curr.getTime() - prev.getTime()) / 86400_000;
+      if (diffDays === 1) {
+        run++;
+      } else {
+        run = 1;
+      }
+      if (run > longestStreak) longestStreak = run;
+    }
+    if (sortedDates.length === 1 && longestStreak === 0) longestStreak = 1;
+    if (currentStreak > longestStreak) longestStreak = currentStreak;
+  }
+
   return (
     <div className="max-w-[80ch] mx-auto px-4 py-8 sm:py-12">
       {/* Header */}
@@ -152,11 +187,41 @@ export default async function ProfilePage({ params }: Props) {
             <Badge variant="secondary" className="text-xs">
               {activeDays} day{activeDays !== 1 ? 's' : ''} active
             </Badge>
+            {currentStreak > 0 && (
+              <Badge variant="secondary" className="text-xs gap-1">
+                <Flame className="size-3" />
+                {currentStreak}d streak
+              </Badge>
+            )}
+            {longestStreak > currentStreak && (
+              <Badge variant="secondary" className="text-xs">
+                Best: {longestStreak}d
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
             <Calendar className="size-3.5" />
             <span>Joined {joinDate}</span>
           </div>
+          {(user.githubUrl || user.twitterUrl || user.websiteUrl) && (
+            <div className="flex items-center gap-3 mt-2">
+              {user.githubUrl && (
+                <a href={user.githubUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="GitHub">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
+                </a>
+              )}
+              {user.twitterUrl && (
+                <a href={user.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                </a>
+              )}
+              {user.websiteUrl && (
+                <a href={user.websiteUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Website">
+                  <Globe className="size-4" />
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </header>
 
@@ -181,6 +246,37 @@ export default async function ProfilePage({ params }: Props) {
             value={String(totalProjects)}
             icon={<FolderOpen className="size-5" />}
             tooltip="Number of distinct project directories where Claude Code was used"
+          />
+        </div>
+      </div>
+
+      {/* Token Breakdown */}
+      <div className="mb-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">TOKENS</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <StatCard
+            label="Input"
+            value={formatTokens(totalInput)}
+            icon={<ArrowDownToLine className="size-5" />}
+            tooltip="Tokens sent to Claude as input (prompts, context)"
+          />
+          <StatCard
+            label="Output"
+            value={formatTokens(totalOutput)}
+            icon={<ArrowUpFromLine className="size-5" />}
+            tooltip="Tokens generated by Claude as output (responses, code)"
+          />
+          <StatCard
+            label="Cache Write"
+            value={formatTokens(totalCacheCreation)}
+            icon={<DatabaseZap className="size-5" />}
+            tooltip="Tokens written to prompt cache for reuse"
+          />
+          <StatCard
+            label="Cache Read"
+            value={formatTokens(totalCacheRead)}
+            icon={<BookOpen className="size-5" />}
+            tooltip="Tokens read from prompt cache (saves cost)"
           />
         </div>
       </div>

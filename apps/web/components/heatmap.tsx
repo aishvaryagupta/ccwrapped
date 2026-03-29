@@ -11,7 +11,7 @@ export function Heatmap({ days }: HeatmapProps) {
     <div
       className="border-2 border-foreground bg-card p-4 sm:p-6"
       role="img"
-      aria-label="Activity heatmap showing daily token usage over the last 90 days"
+      aria-label="Activity heatmap showing daily token usage over the last year"
     >
       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
         Activity
@@ -33,7 +33,7 @@ export function Heatmap({ days }: HeatmapProps) {
           return (
             <div
               key={day.date}
-              className={`size-3 sm:size-3.5 ${level}`}
+              className={`size-2.5 sm:size-3 ${level}`}
               title={`${day.date}: ${formatTokens(day.tokens)} tokens`}
               role="presentation"
             />

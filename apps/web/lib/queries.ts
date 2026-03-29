@@ -15,6 +15,9 @@ export interface UserProfile {
   displayName: string | null;
   avatarUrl: string;
   createdAt: string;
+  githubUrl: string | null;
+  twitterUrl: string | null;
+  websiteUrl: string | null;
 }
 
 export interface DayStats {
@@ -44,7 +47,7 @@ export async function fetchUserProfile(
   const supabase = getClient();
   const { data } = await supabase
     .from('users')
-    .select('id, username, display_name, avatar_url, created_at')
+    .select('id, username, display_name, avatar_url, created_at, github_url, twitter_url, website_url')
     .eq('username', username)
     .single();
 
@@ -56,6 +59,9 @@ export async function fetchUserProfile(
     displayName: data.display_name,
     avatarUrl: data.avatar_url,
     createdAt: data.created_at,
+    githubUrl: data.github_url ?? null,
+    twitterUrl: data.twitter_url ?? null,
+    websiteUrl: data.website_url ?? null,
   };
 }
 
