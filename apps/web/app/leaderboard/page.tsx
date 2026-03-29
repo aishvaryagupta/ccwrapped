@@ -72,10 +72,10 @@ export default async function LeaderboardPage({ searchParams }: Props) {
         <div className="border-2 border-foreground bg-card p-12 text-center" role="status">
           <p className="text-lg font-medium mb-2">No data yet</p>
           <p className="text-sm text-muted-foreground mb-6">
-            Be the first on the board! Install the plugin and start coding.
+            Be the first on the board! Run one command and start coding.
           </p>
           <code className="inline-block bg-muted border-2 border-foreground px-4 py-2 text-sm font-mono text-primary">
-            /plugin install ccwrapped@ccwrapped-marketplace
+            npx ccwrapdev
           </code>
         </div>
       ) : (
@@ -174,7 +174,7 @@ export default async function LeaderboardPage({ searchParams }: Props) {
       <div className="mt-10 text-center text-sm text-muted-foreground">
         Not on the board?{' '}
         <code className="text-primary bg-muted border-2 border-foreground px-2 py-1 font-mono">
-          /plugin install ccwrapped@ccwrapped-marketplace
+          npx ccwrapdev
         </code>
       </div>
     </div>

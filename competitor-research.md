@@ -37,6 +37,22 @@
 | **Node requirement** | Node 20+ | Node 18+ |
 | **Friction** | Higher — marketplace add step confuses users | Lower — single npx command |
 
+### Auth Flow Detail
+
+**ccwrapped (Google OAuth Device Flow):**
+1. CLI calls Google's device code endpoint → gets a one-time code (e.g. `XXXX-XXXX`)
+2. Shows code to user and opens `https://www.google.com/device` in browser
+3. User enters code on Google's page and authorizes
+4. CLI polls Google in background until authorization completes
+5. Stores access token + refresh token in `~/.config/ccwrapped/state.json`
+
+**Code Card:**
+1. User runs `npx code-card`
+2. CLI reads local session files and likely initiates a device code flow (device code → browser link)
+3. Despite "no OAuth" marketing, profile URLs (`codecard.dev/[username]`) require identity — some auth step exists but is downplayed in their messaging
+
+**Implication:** Both products use a similar device-code-to-browser flow. Code Card's real advantage is fewer setup steps (1 npx command vs marketplace add + install + auth), not the absence of auth itself.
+
 ## Profile & Dashboard Features
 
 | Feature | **ccwrapped** | **Code Card** |

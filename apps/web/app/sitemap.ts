@@ -9,6 +9,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
+      url: 'https://ccwrapped.dev/docs',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
       url: 'https://ccwrapped.dev/leaderboard',
       lastModified: new Date(),
       changeFrequency: 'daily',

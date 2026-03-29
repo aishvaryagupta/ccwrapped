@@ -16,12 +16,12 @@ export default function LandingPage() {
           Visualized. Shared. Ranked.
         </h1>
         <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-          See how much you ship with AI. Install once, auto-sync forever.
+          See how much you ship with AI. One command. Auto-sync forever.
           Get a beautiful card to share.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <code className="bg-card border-2 border-foreground px-6 py-3 text-sm font-mono text-primary select-all">
-            /plugin install ccwrapped@ccwrapped-marketplace
+            npx ccwrapdev
           </code>
           <Link href="/leaderboard">
             <Button variant="ghost" className="gap-2 text-muted-foreground">
@@ -40,13 +40,13 @@ export default function LandingPage() {
         <ol className="grid sm:grid-cols-3 gap-6 sm:gap-8" role="list">
           <Step
             number="1"
-            title="Install the plugin"
-            description="Two commands inside Claude Code. That's it. One-time setup, auto-syncs forever."
+            title="Run one command"
+            description="Run npx ccwrapdev in your terminal. It handles auth, sync, and auto-sync setup in one go."
           />
           <Step
             number="2"
             title="Use Claude Code normally"
-            description="Every session, the plugin silently syncs your token totals. No code or chats leave your machine."
+            description="Every session, your stats auto-sync in the background. No code or chats leave your machine."
           />
           <Step
             number="3"
@@ -87,21 +87,21 @@ export default function LandingPage() {
           Get started in 30 seconds
         </h2>
         <p className="text-muted-foreground mb-8">
-          Run these commands inside Claude Code and you're done.
+          Run this in your terminal and you're done.
         </p>
         <div className="flex flex-col gap-3 text-sm font-mono text-muted-foreground max-w-md mx-auto text-left bg-card border-2 border-foreground p-6" role="region" aria-label="Installation commands">
-          <p className="text-muted-foreground"># Inside Claude Code</p>
+          <p className="text-muted-foreground"># In your terminal</p>
+          <p className="text-foreground">
+            <span className="text-primary" aria-hidden="true">$</span> npx ccwrapdev
+          </p>
+          <div className="border-t-2 border-foreground my-4" />
+          <p className="text-muted-foreground"># Or use the Claude Code plugin</p>
           <p className="text-foreground">
             <span className="text-primary" aria-hidden="true">$</span> /plugin marketplace add
             https://github.com/aishvaryagupta/ccwrapped-plugin.git
           </p>
           <p className="text-foreground">
             <span className="text-primary" aria-hidden="true">$</span> /plugin install ccwrapped@ccwrapped-marketplace
-          </p>
-          <div className="border-t-2 border-foreground my-4" />
-          <p className="text-muted-foreground"># Or try the CLI first</p>
-          <p className="text-foreground">
-            <span className="text-primary" aria-hidden="true">$</span> npx ccwrapdev
           </p>
         </div>
       </section>

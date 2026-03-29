@@ -1,5 +1,5 @@
-import { getConfigDir, readState } from '@ccwrapped/core';
-import { bold, dim, green, red } from '../ui.js';
+import { getConfigDir, isCcwrappedHookInstalled, readState } from '@ccwrapped/core';
+import { bold, dim, green, red, yellow } from '../ui.js';
 
 export async function run(_flags: string[]): Promise<void> {
   const state = readState();
@@ -27,6 +27,13 @@ export async function run(_flags: string[]): Promise<void> {
 
   // Machine ID
   console.log(`  Machine:    ${state.machine_id}`);
+
+  // Auto-sync
+  if (isCcwrappedHookInstalled()) {
+    console.log(`  Auto-sync:  ${green('Enabled')}`);
+  } else {
+    console.log(`  Auto-sync:  ${yellow('Not configured')}  ${dim('Run "npx ccwrapdev setup"')}`);
+  }
 
   // Config path
   console.log(`  Config:     ${getConfigDir()}`);

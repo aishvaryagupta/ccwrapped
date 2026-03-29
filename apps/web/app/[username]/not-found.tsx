@@ -9,10 +9,10 @@ export default function UserNotFound() {
       </p>
       <div className="flex flex-col gap-3">
         <p className="text-sm text-muted-foreground">
-          Want your own profile? Install the plugin:
+          Want your own profile? Run this in your terminal:
         </p>
         <code className="inline-block bg-card border-2 border-foreground px-4 py-2 text-sm font-mono text-primary">
-          /plugin install ccwrapped@ccwrapped-marketplace
+          npx ccwrapdev
         </code>
       </div>
       <div className="mt-8">
