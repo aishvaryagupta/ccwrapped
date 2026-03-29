@@ -44,20 +44,15 @@ export async function verifyAndUpsertUser(
     return { ok: false, status: 401, message: 'Failed to verify token with Google' };
   }
 
-  // Upsert user
+  // Upsert user via RPC (works with partial unique index on google_id)
   const { data, error } = await getSupabaseAdmin()
-    .from('users')
-    .upsert(
-      {
-        google_id: googleUser.id,
-        email: googleUser.email,
-        display_name: googleUser.name,
-        avatar_url: googleUser.picture,
-      },
-      { onConflict: 'google_id' },
-    )
-    .select('id, username')
-    .single();
+    .rpc('upsert_google_user', {
+      p_google_id: googleUser.id,
+      p_email: googleUser.email,
+      p_display_name: googleUser.name,
+      p_avatar_url: googleUser.picture,
+    })
+    .single() as { data: { user_id: string; username: string | null } | null; error: unknown };
 
   if (error || !data) {
     return { ok: false, status: 500, message: 'Failed to upsert user' };
@@ -66,7 +61,7 @@ export async function verifyAndUpsertUser(
   return {
     ok: true,
     user: {
-      userId: data.id,
+      userId: data.user_id,
       googleId: googleUser.id,
       username: data.username,
       email: googleUser.email,
