@@ -26,11 +26,12 @@ export function ModelChart({ models }: ModelChartProps) {
               </div>
               <div className="h-2 bg-muted overflow-hidden">
                 <div
-                  className="h-full"
+                  className="h-full animate-grow-width"
                   style={{
                     width: `${Math.max(model.percentage, 1)}%`,
                     opacity: 1 - i * 0.15,
                     backgroundColor: 'var(--color-foreground)',
+                    animationDelay: `${i * 60}ms`,
                   }}
                 />
               </div>

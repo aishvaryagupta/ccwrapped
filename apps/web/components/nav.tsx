@@ -59,6 +59,7 @@ export function Nav() {
           <SheetTrigger asChild>
             <button
               type="button"
+              data-hover-guard=""
               className="sm:hidden border-2 border-foreground p-2 text-foreground hover:bg-foreground hover:text-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Open menu"
             >

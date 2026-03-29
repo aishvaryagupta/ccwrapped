@@ -107,6 +107,7 @@ export default async function LeaderboardPage({ searchParams }: Props) {
                   return (
                     <tr
                       key={entry.username}
+                      data-hover-guard=""
                       className={`border-b border-border transition-colors hover:bg-accent/50 ${
                         isTop3 ? 'bg-primary/[0.03]' : ''
                       }`}

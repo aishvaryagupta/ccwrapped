@@ -147,7 +147,7 @@ export function ProfileContent({ user, stats, claimBanner }: ProfileContentProps
       {claimBanner}
 
       {/* Header */}
-      <header className="flex items-start sm:items-center gap-4 sm:gap-5 mb-10">
+      <header className="animate-slide-up flex items-start sm:items-center gap-4 sm:gap-5 mb-10">
         {user.avatarUrl && (
           <Image
             src={user.avatarUrl}
@@ -203,7 +203,7 @@ export function ProfileContent({ user, stats, claimBanner }: ProfileContentProps
       </header>
 
       {/* Usage */}
-      <div className="mb-6">
+      <div className="animate-slide-up mb-6" style={{ animationDelay: '60ms' }}>
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">USAGE</h2>
         <div className="border-2 border-foreground grid grid-cols-3 divide-x-2 divide-foreground">
           <StatCard label="Tokens" value={formatTokens(totalTokens)} />
@@ -213,7 +213,7 @@ export function ProfileContent({ user, stats, claimBanner }: ProfileContentProps
       </div>
 
       {/* Token Breakdown */}
-      <div className="mb-6">
+      <div className="animate-slide-up mb-6" style={{ animationDelay: '120ms' }}>
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">TOKENS</h2>
         <div className="border-2 border-foreground grid grid-cols-2 sm:grid-cols-4 divide-x-2 divide-foreground">
           <StatCard label="Input" value={formatTokens(totalInput)} />
@@ -224,7 +224,7 @@ export function ProfileContent({ user, stats, claimBanner }: ProfileContentProps
       </div>
 
       {/* Cost */}
-      <div className="mb-6">
+      <div className="animate-slide-up mb-6" style={{ animationDelay: '180ms' }}>
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">COST</h2>
         <div className="border-2 border-foreground grid grid-cols-3 divide-x-2 divide-foreground">
           <StatCard label="Today" value={`$${dailyCost.toFixed(2)}`} />
@@ -235,7 +235,7 @@ export function ProfileContent({ user, stats, claimBanner }: ProfileContentProps
 
       {/* Code Output */}
       {(totalFilesTouched > 0 || totalLinesWritten > 0) && (
-        <div className="mb-8">
+        <div className="animate-slide-up mb-8" style={{ animationDelay: '240ms' }}>
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">CODE OUTPUT</h2>
           <div className="border-2 border-foreground grid grid-cols-2 divide-x-2 divide-foreground">
             {totalFilesTouched > 0 && (
@@ -249,12 +249,12 @@ export function ProfileContent({ user, stats, claimBanner }: ProfileContentProps
       )}
 
       {/* Heatmap */}
-      <div className="mb-8">
+      <div className="animate-slide-up mb-8" style={{ animationDelay: '300ms' }}>
         <Heatmap days={heatmapData} />
       </div>
 
       {/* Charts */}
-      <div className="grid sm:grid-cols-2 gap-4 mb-8">
+      <div className="animate-slide-up grid sm:grid-cols-2 gap-4 mb-8" style={{ animationDelay: '360ms' }}>
         {sortedModels.length > 0 && <ModelChart models={sortedModels} />}
         {sortedTools.length > 0 && <ToolChart tools={sortedTools} />}
 
@@ -267,14 +267,18 @@ export function ProfileContent({ user, stats, claimBanner }: ProfileContentProps
                 Daily tokens (last {DAILY_TREND_DAYS} days)
               </h3>
               <div className="flex items-end gap-px h-28">
-                {last30.map((day) => {
+                {last30.map((day, i) => {
                   const tokens = day.inputTokens + day.outputTokens;
                   const height = (tokens / maxDay) * 100;
                   return (
                     <div
                       key={day.date}
-                      className="flex-1 bg-primary/70 hover:bg-primary min-h-[2px] transition-colors"
-                      style={{ height: `${Math.max(height, 2)}%` }}
+                      className="flex-1 bg-primary/70 hover:bg-primary min-h-[2px] transition-colors animate-grow-height"
+                      data-hover-guard=""
+                      style={{
+                        height: `${Math.max(height, 2)}%`,
+                        animationDelay: `${i * 10}ms`,
+                      }}
                       title={`${day.date}: ${formatTokens(tokens)}`}
                     />
                   );
@@ -291,7 +295,7 @@ export function ProfileContent({ user, stats, claimBanner }: ProfileContentProps
 
       {/* Share section (only for claimed profiles) */}
       {shareUrl && (
-        <div className="border-2 border-foreground bg-card p-4 sm:p-6">
+        <div className="animate-slide-up border-2 border-foreground bg-card p-4 sm:p-6" style={{ animationDelay: '420ms' }}>
           <h3 className="text-sm font-medium text-muted-foreground mb-4 uppercase">Share your stats</h3>
           <div className="flex flex-col sm:flex-row gap-3">
             <a href={`/api/card/${user.username}.png`} target="_blank" rel="noopener noreferrer">

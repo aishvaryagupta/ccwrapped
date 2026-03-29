@@ -59,6 +59,11 @@
 
   --line-height: 1.20rem;
   --border-thickness: 2px;
+
+  /* Custom easing curves — stronger than built-in CSS easings */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* ============================================================
@@ -163,9 +168,9 @@
   --radius-lg: 0px;
   --radius-xl: 0px;
 
-  --animate-fade-in: fade-in 0.2s ease-out both;
-  --animate-slide-up: slide-up 0.2s ease-out both;
-  --animate-scale-in: scale-in 0.15s ease-out both;
+  --animate-fade-in: fade-in 0.2s var(--ease-out) both;
+  --animate-slide-up: slide-up 0.2s var(--ease-out) both;
+  --animate-scale-in: scale-in 0.15s var(--ease-out) both;
 }
 
 /* ============================================================
@@ -214,16 +219,36 @@ html {
   50%      { opacity: 0.65; }
 }
 
+@keyframes grow-width {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes grow-height {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
 /* ============================================================
  * Entrance animations
  * ============================================================ */
 
 .animate-fade-in {
-  animation: fade-in 0.2s ease-out both;
+  animation: fade-in 0.2s var(--ease-out) both;
 }
 
 .animate-slide-up {
-  animation: slide-up 0.2s ease-out both;
+  animation: slide-up 0.2s var(--ease-out) both;
+}
+
+.animate-grow-width {
+  animation: grow-width 0.4s var(--ease-out) both;
+  transform-origin: left center;
+}
+
+.animate-grow-height {
+  animation: grow-height 0.35s var(--ease-out) both;
+  transform-origin: center bottom;
 }
 
 .animation-delay-50  { animation-delay: 50ms; }
@@ -238,9 +263,22 @@ html {
  * Monospace button press (translate instead of scale)
  * ============================================================ */
 
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  transition: transform 160ms var(--ease-out);
+}
+
 button:active:not(:disabled),
 [role="button"]:active:not(:disabled) {
   transform: translate(2px, 2px);
+}
+
+/* ============================================================
+ * Sheet / drawer easing override
+ * ============================================================ */
+
+[data-sheet-content] {
+  transition-timing-function: var(--ease-drawer);
 }
 
 /* ============================================================
@@ -295,12 +333,27 @@ hr::after {
 .skeleton-stagger > *:nth-child(10) { animation-delay: 450ms; }
 
 /* ============================================================
+ * Touch-device hover guard
+ * Prevent sticky hover states on elements where the visual
+ * change is dramatic (color inversion, background fill).
+ * ============================================================ */
+
+@media (hover: none) {
+  [data-hover-guard]:hover {
+    background-color: inherit;
+    color: inherit;
+  }
+}
+
+/* ============================================================
  * Reduced motion
  * ============================================================ */
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
-  .animate-slide-up {
+  .animate-slide-up,
+  .animate-grow-width,
+  .animate-grow-height {
     animation: none;
     opacity: 1;
     transform: none;
@@ -309,5 +362,19 @@ hr::after {
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     transition: none;
+  }
+
+  [data-sheet-content] {
+    transition-duration: 0ms;
+  }
+
+  .skeleton-stagger > * {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  /* Make filter/opacity transitions instant so blur crossfades are invisible */
+  [style*="blur"] {
+    transition-duration: 0ms !important;
   }
 }

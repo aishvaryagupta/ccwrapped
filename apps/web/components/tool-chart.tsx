@@ -21,11 +21,12 @@ export function ToolChart({ tools }: ToolChartProps) {
             </div>
             <div className="h-2 bg-muted overflow-hidden">
               <div
-                className="h-full"
+                className="h-full animate-grow-width"
                 style={{
                   width: `${Math.max(tool.percentage, 1)}%`,
                   opacity: 1 - i * 0.1,
                   backgroundColor: 'var(--color-foreground)',
+                  animationDelay: `${i * 60}ms`,
                 }}
               />
             </div>
