@@ -1,21 +1,56 @@
 import { NextResponse } from 'next/server';
 import { validateUsername } from '@ccwrapped/core';
-import { verifyAndUpsertUser } from '@/lib/auth';
+import { verifyAndUpsertUser, verifyBySyncToken } from '@/lib/auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { getSessionUserId } from '@/lib/session';
 
 export async function POST(request: Request) {
-  const auth = await verifyAndUpsertUser(request.headers.get('Authorization'));
-  if (!auth.ok) {
+  // Three-way auth: session cookie > X-Sync-Token > Bearer
+  let userId: string | null = null;
+  let existingUsername: string | null = null;
+
+  // Try session cookie first (web claim flow)
+  userId = await getSessionUserId();
+
+  if (!userId) {
+    // Try sync token
+    const syncTokenHeader = request.headers.get('X-Sync-Token');
+    if (syncTokenHeader) {
+      const auth = await verifyBySyncToken(syncTokenHeader);
+      if (auth.ok) {
+        userId = auth.user.userId;
+        existingUsername = auth.user.username;
+      }
+    }
+  }
+
+  if (!userId) {
+    // Try Bearer token (backward compat)
+    const auth = await verifyAndUpsertUser(request.headers.get('Authorization'));
+    if (auth.ok) {
+      userId = auth.user.userId;
+      existingUsername = auth.user.username;
+    }
+  }
+
+  if (!userId) {
     return NextResponse.json(
-      { error: 'auth', message: auth.message },
-      { status: auth.status },
+      { error: 'auth', message: 'Not authenticated' },
+      { status: 401 },
     );
   }
 
-  const { user } = auth;
+  // Check if username already set
+  if (existingUsername === null) {
+    const { data: userRow } = await getSupabaseAdmin()
+      .from('users')
+      .select('username')
+      .eq('id', userId)
+      .single();
+    existingUsername = userRow?.username ?? null;
+  }
 
-  // Already has a username
-  if (user.username) {
+  if (existingUsername) {
     return NextResponse.json(
       { error: 'already_set', message: 'Username is already set' },
       { status: 400 },
@@ -51,20 +86,18 @@ export async function POST(request: Request) {
   const { data, error } = await getSupabaseAdmin()
     .from('users')
     .update({ username: validation.normalized })
-    .eq('id', user.userId)
+    .eq('id', userId)
     .is('username', null)
     .select('username')
     .single();
 
   if (error) {
-    // Unique constraint violation — another user has this username
     if (error.code === '23505') {
       return NextResponse.json(
         { error: 'taken', message: 'Username is already taken' },
         { status: 409 },
       );
     }
-    // PGRST116 = single() found 0 rows — username was already set (concurrent request)
     if (error.code === 'PGRST116') {
       return NextResponse.json(
         { error: 'already_set', message: 'Username is already set' },
