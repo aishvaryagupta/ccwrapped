@@ -68,11 +68,14 @@ export async function fetchUserProfile(
 export async function fetchUserByProfileId(
   profileId: string,
 ): Promise<UserProfile | null> {
+  // Validate: must be 12 hex chars (matches profile_id_prefix column format)
+  if (!/^[a-f0-9]{8,12}$/.test(profileId)) return null;
+
   const supabase = getClient();
   const { data } = await supabase
     .from('users')
     .select('id, username, display_name, avatar_url, created_at, github_url, twitter_url, website_url')
-    .like('id', `${profileId}%`)
+    .eq('profile_id_prefix', profileId)
     .single();
 
   if (!data) return null;
