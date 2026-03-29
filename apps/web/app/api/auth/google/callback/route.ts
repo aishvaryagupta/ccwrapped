@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { verifySignedValue, signValue } from '@/lib/cookies';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -19,9 +20,9 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
-  const error = searchParams.get('error');
+  const authError = searchParams.get('error');
 
-  if (error) {
+  if (authError) {
     return NextResponse.redirect(`${BASE_URL}?error=auth_denied`);
   }
 
@@ -29,30 +30,27 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${BASE_URL}?error=missing_params`);
   }
 
-  // 1. Verify CSRF nonce
-  const csrfCookie = request.headers.get('cookie')?.match(/ccwrapped_csrf=([^;]+)/)?.[1];
-  if (!csrfCookie) {
-    return NextResponse.redirect(`${BASE_URL}?error=csrf_missing`);
-  }
+  // 1. Read and verify cookies
+  const cookieStore = await cookies();
+  const csrfCookie = cookieStore.get('ccwrapped_csrf')?.value;
+  const profileCookie = cookieStore.get('ccwrapped_profile')?.value;
+  const pkceCookie = cookieStore.get('ccwrapped_pkce')?.value;
 
-  const nonce = verifySignedValue(decodeURIComponent(csrfCookie));
-  if (!nonce || nonce !== state) {
-    return NextResponse.redirect(`${BASE_URL}?error=csrf_mismatch`);
-  }
-
-  // 2. Read profile_id and code_verifier from cookies
-  const profileCookie = request.headers.get('cookie')?.match(/ccwrapped_profile=([^;]+)/)?.[1];
-  const pkceCookie = request.headers.get('cookie')?.match(/ccwrapped_pkce=([^;]+)/)?.[1];
-
-  if (!profileCookie || !pkceCookie) {
+  if (!csrfCookie || !profileCookie || !pkceCookie) {
     return NextResponse.redirect(`${BASE_URL}?error=session_expired`);
   }
 
-  const profileId = verifySignedValue(decodeURIComponent(profileCookie));
-  const codeVerifier = verifySignedValue(decodeURIComponent(pkceCookie));
+  const nonce = verifySignedValue(csrfCookie);
+  const profileId = verifySignedValue(profileCookie);
+  const codeVerifier = verifySignedValue(pkceCookie);
 
-  if (!profileId || !codeVerifier) {
+  if (!nonce || !profileId || !codeVerifier) {
     return NextResponse.redirect(`${BASE_URL}?error=invalid_cookies`);
+  }
+
+  // 2. Verify CSRF
+  if (nonce !== state) {
+    return NextResponse.redirect(`${BASE_URL}?error=csrf_mismatch`);
   }
 
   // 3. Exchange code for access token (with PKCE)
@@ -126,50 +124,11 @@ export async function GET(request: Request) {
   let finalUsername: string | null;
 
   if (existingGoogleUser && existingGoogleUser.id !== anonUser.id) {
-    // Merge: move anonymous stats to existing Google user, transfer sync_token
-    // Use a transaction-like approach via sequential operations
-    // 1. Merge daily_stats with upsert-with-sum for overlapping dates
-    const { data: anonStats } = await supabase
-      .from('daily_stats')
-      .select('*')
-      .eq('user_id', anonUser.id);
-
-    if (anonStats && anonStats.length > 0) {
-      for (const row of anonStats) {
-        await supabase.from('daily_stats').upsert(
-          {
-            user_id: existingGoogleUser.id,
-            date: row.date,
-            input_tokens: row.input_tokens,
-            output_tokens: row.output_tokens,
-            cache_creation_tokens: row.cache_creation_tokens,
-            cache_read_tokens: row.cache_read_tokens,
-            cost_usd: row.cost_usd,
-            session_count: row.session_count,
-            project_count: row.project_count,
-            model_breakdowns: row.model_breakdowns,
-            tool_usage: row.tool_usage,
-            files_touched: row.files_touched,
-            lines_written: row.lines_written,
-            machine_id: row.machine_id,
-            synced_at: new Date().toISOString(),
-          },
-          { onConflict: 'user_id,date' },
-        );
-      }
-    }
-
-    // 2. Transfer sync_token_hash to existing user (so CLI keeps working)
-    if (anonUser.sync_token_hash) {
-      await supabase
-        .from('users')
-        .update({ sync_token_hash: anonUser.sync_token_hash })
-        .eq('id', existingGoogleUser.id);
-    }
-
-    // 3. Delete anonymous user (cascade deletes remaining daily_stats)
-    await supabase.from('daily_stats').delete().eq('user_id', anonUser.id);
-    await supabase.from('users').delete().eq('id', anonUser.id);
+    // Merge: atomic RPC transfers stats, sync_token, deletes anonymous user
+    await supabase.rpc('merge_anonymous_user', {
+      p_anon_user_id: anonUser.id,
+      p_target_user_id: existingGoogleUser.id,
+    });
 
     finalUserId = existingGoogleUser.id;
     finalUsername = existingGoogleUser.username;
@@ -190,7 +149,7 @@ export async function GET(request: Request) {
   }
 
   // 7. Set session cookie for claim page
-  const expiry = Math.floor(Date.now() / 1000) + 3600; // 1 hour
+  const expiry = Math.floor(Date.now() / 1000) + 3600;
   const sessionValue = `${finalUserId}:${expiry}`;
 
   const response = finalUsername

@@ -1,4 +1,4 @@
-import { createHmac, randomUUID } from 'node:crypto';
+import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
 function getSecret(): string {
   const secret = process.env.COOKIE_SECRET;
@@ -21,13 +21,11 @@ export function verifySignedValue(signed: string): string | null {
 
   if (sig.length !== expected.length) return null;
 
-  // Timing-safe comparison
-  let mismatch = 0;
-  for (let i = 0; i < sig.length; i++) {
-    mismatch |= sig.charCodeAt(i) ^ expected.charCodeAt(i);
-  }
+  const sigBuf = Buffer.from(sig, 'hex');
+  const expectedBuf = Buffer.from(expected, 'hex');
+  if (sigBuf.length !== expectedBuf.length) return null;
 
-  return mismatch === 0 ? value : null;
+  return timingSafeEqual(sigBuf, expectedBuf) ? value : null;
 }
 
 export function generateNonce(): string {
