@@ -50,6 +50,8 @@ describe('readState', () => {
       token_expiry: '2026-03-27T11:00:00Z',
       username: 'testuser',
       machine_id: 'abc123def456',
+      sync_token: null,
+      profile_id: null,
     };
     writeState(existing, tempDir);
     const state = readState(tempDir);

@@ -22,6 +22,8 @@ function defaultState(): CcwrappedState {
     token_expiry: null,
     username: null,
     machine_id: buildMachineId(),
+    sync_token: null,
+    profile_id: null,
   };
 }
 
@@ -145,6 +147,27 @@ export async function getValidToken(
   return result.accessToken;
 }
 
+export function getSyncToken(configDir?: string): string | null {
+  return readState(configDir).sync_token;
+}
+
+export function setSyncToken(token: string, profileId: string, configDir?: string): void {
+  const state = readState(configDir);
+  state.sync_token = token;
+  state.profile_id = profileId;
+  writeState(state, configDir);
+}
+
 export function clearState(configDir?: string): void {
+  const state = readState(configDir);
+  const fresh = defaultState();
+  // Preserve sync_token and profile_id — logout shouldn't destroy the anonymous profile
+  fresh.sync_token = state.sync_token;
+  fresh.profile_id = state.profile_id;
+  fresh.machine_id = state.machine_id;
+  writeState(fresh, configDir);
+}
+
+export function fullClearState(configDir?: string): void {
   writeState(defaultState(), configDir);
 }

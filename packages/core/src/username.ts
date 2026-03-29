@@ -9,6 +9,7 @@ const RESERVED_USERNAMES = new Set([
   'blog',
   'callback',
   'card',
+  'claim',
   'dashboard',
   'docs',
   'error',

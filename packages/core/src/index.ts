@@ -68,18 +68,22 @@ export {
 export {
   addSyncedSession,
   clearState,
+  fullClearState,
   getAuthToken,
   getConfigDir,
+  getSyncToken,
   getValidToken,
   isSessionSynced,
   readState,
   setAuthToken,
+  setSyncToken,
   setUsername,
   writeState,
 } from './state.js';
 
 // HTTP
 export { claimUsername, fetchSyncMetadata, postSyncPayload } from './http.js';
+export type { SyncAuth, SyncResponse } from './http.js';
 
 // Auth
 export {

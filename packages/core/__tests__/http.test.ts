@@ -27,14 +27,14 @@ describe('postSyncPayload', () => {
       }),
     );
 
-    const result = await postSyncPayload('https://api.test', 'token123', mockPayload);
+    const result = await postSyncPayload('https://api.test', mockPayload, { syncToken: 'token123' });
 
     expect(mockFetch).toHaveBeenCalledOnce();
     const [url, opts] = mockFetch.mock.calls[0];
     expect(url).toBe('https://api.test/sync');
     expect((opts as RequestInit).method).toBe('POST');
     expect((opts as RequestInit).headers).toMatchObject({
-      Authorization: 'Bearer token123',
+      'X-Sync-Token': 'token123',
     });
 
     expect(result.ok).toBe(true);
@@ -45,20 +45,20 @@ describe('postSyncPayload', () => {
 
   it('returns auth error on 401', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response('', { status: 401 }));
-    const result = await postSyncPayload('https://api.test', 'bad', mockPayload);
+    const result = await postSyncPayload('https://api.test', mockPayload, { syncToken: 'bad' });
     expect(result).toEqual({ ok: false, error: 'auth', message: 'Invalid or expired token' });
   });
 
   it('returns server error on 500', async () => {
     vi.mocked(fetch).mockResolvedValue(new Response('', { status: 500 }));
-    const result = await postSyncPayload('https://api.test', 'token', mockPayload);
+    const result = await postSyncPayload('https://api.test', mockPayload, { syncToken: 'token' });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toBe('server');
   });
 
   it('returns network error on fetch failure', async () => {
     vi.mocked(fetch).mockRejectedValue(new Error('ECONNREFUSED'));
-    const result = await postSyncPayload('https://api.test', 'token', mockPayload);
+    const result = await postSyncPayload('https://api.test', mockPayload, { syncToken: 'token' });
     expect(result).toEqual({ ok: false, error: 'network', message: 'Could not reach server' });
   });
 });
@@ -80,7 +80,7 @@ describe('fetchSyncMetadata', () => {
       ),
     );
 
-    const result = await fetchSyncMetadata('https://api.test', 'token', '2026-03-27');
+    const result = await fetchSyncMetadata('https://api.test', '2026-03-27', { syncToken: 'token' });
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.machine_id).toBe('abc');
@@ -89,7 +89,7 @@ describe('fetchSyncMetadata', () => {
 
   it('returns empty metadata on 404', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response('', { status: 404 }));
-    const result = await fetchSyncMetadata('https://api.test', 'token', '2026-03-27');
+    const result = await fetchSyncMetadata('https://api.test', '2026-03-27', { syncToken: 'token' });
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.total_tokens).toBe(0);
@@ -98,7 +98,7 @@ describe('fetchSyncMetadata', () => {
 
   it('returns network error on failure', async () => {
     vi.mocked(fetch).mockRejectedValue(new Error('timeout'));
-    const result = await fetchSyncMetadata('https://api.test', 'token', '2026-03-27');
+    const result = await fetchSyncMetadata('https://api.test', '2026-03-27', { syncToken: 'token' });
     expect(result).toEqual({ ok: false, error: 'network' });
   });
 });

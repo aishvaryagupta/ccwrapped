@@ -1,6 +1,23 @@
 import { HTTP_TIMEOUT_MS } from './consts.js';
 import type { HttpResult, SyncMetadata, SyncPayload } from './types.js';
 
+export interface SyncAuth {
+  syncToken?: string;
+  bearerToken?: string;
+}
+
+export interface SyncResponse {
+  profile_url: string;
+  username: string | null;
+  sync_token?: string;
+}
+
+function buildAuthHeaders(auth?: SyncAuth): Record<string, string> {
+  if (auth?.syncToken) return { 'X-Sync-Token': auth.syncToken };
+  if (auth?.bearerToken) return { Authorization: `Bearer ${auth.bearerToken}` };
+  return {};
+}
+
 const MAX_RETRIES = 2;
 const BASE_DELAY_MS = 500;
 
@@ -49,15 +66,15 @@ async function fetchWithRetry(
 
 export async function postSyncPayload(
   baseUrl: string,
-  token: string,
   payload: SyncPayload,
-): Promise<HttpResult<{ profile_url: string }>> {
+  auth?: SyncAuth,
+): Promise<HttpResult<SyncResponse>> {
   try {
     const res = await fetchWithRetry(`${baseUrl}/sync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        ...buildAuthHeaders(auth),
       },
       body: JSON.stringify(payload),
     });
@@ -68,7 +85,7 @@ export async function postSyncPayload(
 
     if (res.status === 429) {
       const retryAfter = res.headers.get('Retry-After');
-      return { ok: false, error: 'server', message: `Rate limited. Try again in ${retryAfter ?? '60'} minutes.` };
+      return { ok: false, error: 'server', message: `Rate limited. Try again in ${retryAfter ?? '60'} seconds.` };
     }
 
     if (!res.ok) {
@@ -76,7 +93,7 @@ export async function postSyncPayload(
       return { ok: false, error: 'server', message: body.message ?? `HTTP ${res.status}` };
     }
 
-    const data = (await res.json()) as { profile_url: string };
+    const data = (await res.json()) as SyncResponse;
     return { ok: true, data };
   } catch (err) {
     const message = err instanceof TimeoutError
@@ -88,14 +105,12 @@ export async function postSyncPayload(
 
 export async function fetchSyncMetadata(
   baseUrl: string,
-  token: string,
   date: string,
+  auth?: SyncAuth,
 ): Promise<HttpResult<SyncMetadata>> {
   try {
     const res = await fetchWithRetry(`${baseUrl}/sync/metadata?date=${date}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: buildAuthHeaders(auth),
     });
 
     if (res.status === 401) {

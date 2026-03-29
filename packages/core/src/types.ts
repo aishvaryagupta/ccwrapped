@@ -156,6 +156,8 @@ export interface CcwrappedState {
   token_expiry: string | null;
   username: string | null;
   machine_id: string;
+  sync_token: string | null;
+  profile_id: string | null;
 }
 
 // ---------------------------------------------------------------------------
