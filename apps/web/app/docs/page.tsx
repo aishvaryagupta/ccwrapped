@@ -17,18 +17,17 @@ const TOC = [
 ] as const;
 
 const COMMANDS = [
-  { cmd: 'npx ccwrapdev', purpose: 'Full setup: auth + sync + auto-sync', auth: false },
+  { cmd: 'npx ccwrapdev', purpose: 'Scan + sync stats (no auth needed)', auth: false },
   { cmd: 'npx ccwrapdev --local', purpose: 'View local stats (offline)', auth: false },
-  { cmd: 'npx ccwrapdev auth', purpose: 'Authenticate with Google', auth: false },
-  { cmd: 'npx ccwrapdev auth --logout', purpose: 'Remove stored credentials', auth: false },
-  { cmd: 'npx ccwrapdev sync', purpose: 'Manual sync to ccwrapped.dev', auth: true },
-  { cmd: 'npx ccwrapdev sync --minimal', purpose: 'Sync without model data', auth: true },
+  { cmd: 'npx ccwrapdev sync', purpose: 'Manual sync to ccwrapped.dev', auth: false },
+  { cmd: 'npx ccwrapdev sync --minimal', purpose: 'Sync without model data', auth: false },
   { cmd: 'npx ccwrapdev setup', purpose: 'Enable auto-sync hook', auth: false },
   { cmd: 'npx ccwrapdev setup --check', purpose: 'Check auto-sync status', auth: false },
   { cmd: 'npx ccwrapdev setup --remove', purpose: 'Disable auto-sync hook', auth: false },
-  { cmd: 'npx ccwrapdev card', purpose: 'Open profile in browser', auth: true },
-  { cmd: 'npx ccwrapdev card --copy', purpose: 'Copy profile URL to clipboard', auth: true },
+  { cmd: 'npx ccwrapdev card', purpose: 'Open profile in browser', auth: false },
+  { cmd: 'npx ccwrapdev card --copy', purpose: 'Copy profile URL to clipboard', auth: false },
   { cmd: 'npx ccwrapdev status', purpose: 'Show config overview', auth: false },
+  { cmd: 'npx ccwrapdev auth --logout', purpose: 'Clear stored auth credentials', auth: false },
 ] as const;
 
 const FAQ = [
@@ -88,30 +87,32 @@ export default function DocsPage() {
       <section id="getting-started" className="scroll-mt-16 mb-16">
         <h2 className="text-2xl sm:text-3xl font-bold uppercase mb-6">Getting Started</h2>
         <p className="text-muted-foreground mb-6 leading-relaxed">
-          One command gets you set up. Run it in your terminal — not inside Claude Code.
+          One command. No sign-up. No auth. Run it in your terminal.
         </p>
         <CodeBlock>npx ccwrapdev</CodeBlock>
         <p className="text-muted-foreground mt-6 mb-4 leading-relaxed">
           Here's what happens when you run it for the first time:
         </p>
         <ol className="flex flex-col gap-3">
-          <NumberedStep n={1} title="Sign in with Google">
-            A one-time code appears in your terminal. Your browser opens to Google's
-            device page. Enter the code and authorize.
+          <NumberedStep n={1} title="Your stats are scanned">
+            ccwrapped reads your local Claude Code logs and shows a summary
+            (tokens, cost, sessions) in the terminal.
           </NumberedStep>
-          <NumberedStep n={2} title="Pick a username">
-            Choose a username for your public profile (e.g. @alice).
+          <NumberedStep n={2} title="Stats are synced">
+            Daily totals are uploaded to ccwrapped.dev. No account needed —
+            you get an anonymous profile URL instantly.
           </NumberedStep>
-          <NumberedStep n={3} title="Your stats are scanned and uploaded">
-            ccwrapped reads your local Claude Code logs, aggregates daily totals
-            (tokens, cost, models), and uploads them to ccwrapped.dev.
+          <NumberedStep n={3} title="Your profile opens in the browser">
+            See your stats visualized on the web. Heatmap, model breakdown,
+            cost charts — all there.
           </NumberedStep>
-          <NumberedStep n={4} title="Your profile opens in the browser">
-            See your stats at ccwrapped.dev/your-username.
-          </NumberedStep>
-          <NumberedStep n={5} title="Auto-sync is enabled">
+          <NumberedStep n={4} title="Auto-sync is enabled">
             You're asked &quot;Set up auto-sync? (Y/n)&quot;. Press Enter. From now
             on, stats sync automatically after every Claude Code session.
+          </NumberedStep>
+          <NumberedStep n={5} title="Claim a username (optional)">
+            Visit your profile and click &quot;Claim with Google&quot; to get a
+            custom URL like ccwrapped.dev/alice.
           </NumberedStep>
         </ol>
         <p className="text-muted-foreground mt-6 text-sm leading-relaxed">

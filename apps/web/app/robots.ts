@@ -5,6 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
+      disallow: ['/p/', '/claim', '/api/'],
     },
     sitemap: 'https://ccwrapped.dev/sitemap.xml',
   };

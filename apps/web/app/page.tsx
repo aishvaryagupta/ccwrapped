@@ -16,8 +16,8 @@ export default function LandingPage() {
           Visualized. Shared. Ranked.
         </h1>
         <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-          See how much you ship with AI. One command. Auto-sync forever.
-          Get a beautiful card to share.
+          See how much you ship with AI. One command. No sign-up.
+          Auto-sync forever. Get a beautiful card to share.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <code className="bg-card border-2 border-foreground px-6 py-3 text-sm font-mono text-primary select-all">
@@ -41,7 +41,7 @@ export default function LandingPage() {
           <Step
             number="1"
             title="Run one command"
-            description="Run npx ccwrapdev in your terminal. It handles auth, sync, and auto-sync setup in one go."
+            description="Run npx ccwrapdev in your terminal. No sign-up, no auth. Your stats sync instantly."
           />
           <Step
             number="2"
