@@ -42,8 +42,8 @@ export async function verifyBySyncToken(rawToken: string): Promise<AuthResult> {
     return { ok: false, status: 401, message: 'Invalid sync token' };
   }
 
-  // Update last_active_at
-  await getSupabaseAdmin()
+  // Best-effort update of last_active_at
+  void getSupabaseAdmin()
     .from('users')
     .update({ last_active_at: new Date().toISOString() })
     .eq('id', data.id);
@@ -56,15 +56,43 @@ export async function verifyBySyncToken(rawToken: string): Promise<AuthResult> {
 
 // ---------------------------------------------------------------------------
 // Create anonymous user (no auth headers)
+// Idempotent: reuses existing anonymous user for the same machine_id
 // ---------------------------------------------------------------------------
 
 export async function createAnonymousUser(
   machineId: string,
   ip: string,
 ): Promise<AuthResult & { syncToken?: string }> {
-  // IP rate limit: max 5 anonymous creations per IP per hour
-  const ipAllowed = await checkAnonymousCreationLimit(ip);
-  if (!ipAllowed) {
+  // Check for existing anonymous user with this machine_id (idempotent retry)
+  const { data: existing } = await getSupabaseAdmin()
+    .from('users')
+    .select('id, username, sync_token_hash')
+    .eq('machine_id', machineId)
+    .is('google_id', null)
+    .single();
+
+  if (existing) {
+    // Existing anonymous user for this machine — but we can't return the raw
+    // sync_token since we only store the hash. The CLI must have lost it.
+    // Generate a new sync_token and update the hash.
+    const rawToken = randomUUID();
+    await getSupabaseAdmin()
+      .from('users')
+      .update({ sync_token_hash: hashSyncToken(rawToken), last_active_at: new Date().toISOString() })
+      .eq('id', existing.id);
+
+    return {
+      ok: true,
+      user: { userId: existing.id, username: existing.username },
+      syncToken: rawToken,
+    };
+  }
+
+  // IP rate limit via atomic Postgres function
+  const { data: allowed } = await getSupabaseAdmin()
+    .rpc('check_anon_creation_limit', { p_ip: ip }) as { data: boolean | null };
+
+  if (!allowed) {
     return { ok: false, status: 429, message: 'Too many accounts created. Try again later.' };
   }
 
@@ -86,42 +114,6 @@ export async function createAnonymousUser(
     user: { userId: data.id, username: data.username },
     syncToken: rawToken,
   };
-}
-
-// ---------------------------------------------------------------------------
-// IP-based rate limit for anonymous user creation
-// ---------------------------------------------------------------------------
-
-async function checkAnonymousCreationLimit(ip: string): Promise<boolean> {
-  const supabase = getSupabaseAdmin();
-  const oneHourAgo = new Date(Date.now() - 3600_000).toISOString();
-
-  // Clean expired windows
-  await supabase
-    .from('anon_creation_limits')
-    .delete()
-    .lt('window_start', oneHourAgo);
-
-  // Check current count
-  const { data } = await supabase
-    .from('anon_creation_limits')
-    .select('count')
-    .eq('ip_address', ip)
-    .single();
-
-  if (data && data.count >= 5) {
-    return false;
-  }
-
-  // Upsert: increment or insert
-  await supabase
-    .from('anon_creation_limits')
-    .upsert(
-      { ip_address: ip, count: (data?.count ?? 0) + 1, window_start: data ? undefined : new Date().toISOString() },
-      { onConflict: 'ip_address' },
-    );
-
-  return true;
 }
 
 // ---------------------------------------------------------------------------

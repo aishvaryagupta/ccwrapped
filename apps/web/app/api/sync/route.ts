@@ -59,9 +59,15 @@ export async function POST(request: Request) {
     returnSyncToken = auth.syncToken;
   } else {
     // Path 3: Anonymous first sync
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      ?? request.headers.get('x-real-ip')
-      ?? 'unknown';
+    // Vercel sets x-real-ip as the trusted client IP (not spoofable)
+    const ip = request.headers.get('x-real-ip')
+      ?? request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+    if (!ip) {
+      return NextResponse.json(
+        { error: 'auth', message: 'Unable to determine client IP' },
+        { status: 400 },
+      );
+    }
     const auth = await createAnonymousUser(payload.machine_id, ip);
     if (!auth.ok) {
       return NextResponse.json(
@@ -119,7 +125,7 @@ export async function POST(request: Request) {
   // 5. Build profile URL
   const profileUrl = username
     ? `https://ccwrapped.dev/@${username}`
-    : `https://ccwrapped.dev/p/${userId.slice(0, 8)}`;
+    : `https://ccwrapped.dev/p/${userId.slice(0, 12)}`;
 
   // 6. Respond
   return NextResponse.json({
