@@ -16,9 +16,6 @@ function defaultState(): CcwrappedState {
   return {
     synced_sessions: [],
     last_sync: null,
-    auth_token: null,
-    refresh_token: null,
-    token_expiry: null,
     username: null,
     machine_id: buildMachineId(),
     sync_token: null,

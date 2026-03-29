@@ -7,7 +7,6 @@ export const dim = (s: string) => `${ESC}2m${s}${ESC}0m`;
 export const green = (s: string) => `${ESC}32m${s}${ESC}0m`;
 export const yellow = (s: string) => `${ESC}33m${s}${ESC}0m`;
 export const red = (s: string) => `${ESC}31m${s}${ESC}0m`;
-export const cyan = (s: string) => `${ESC}36m${s}${ESC}0m`;
 
 export { formatCost, formatTokens };
 

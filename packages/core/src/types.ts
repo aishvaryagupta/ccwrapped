@@ -151,36 +151,10 @@ export interface ScanOptions {
 export interface CcwrappedState {
   synced_sessions: string[];
   last_sync: string | null;
-  auth_token: string | null;
-  refresh_token: string | null;
-  token_expiry: string | null;
   username: string | null;
   machine_id: string;
   sync_token: string | null;
   profile_id: string | null;
-}
-
-// ---------------------------------------------------------------------------
-// Auth types
-// ---------------------------------------------------------------------------
-
-export interface DeviceCodeResponse {
-  device_code: string;
-  user_code: string;
-  verification_url: string;
-  expires_in: number;
-  interval: number;
-}
-
-export type AuthResult =
-  | { ok: true; token: string; refreshToken: string; expiresIn: number; email: string }
-  | { ok: false; error: 'expired' | 'denied' | 'network' | 'not_configured' };
-
-export interface GoogleUser {
-  id: string;
-  email: string;
-  name: string;
-  picture: string;
 }
 
 // ---------------------------------------------------------------------------

@@ -28,8 +28,8 @@ describe('readState', () => {
     const state = readState(tempDir);
     expect(state.synced_sessions).toEqual([]);
     expect(state.last_sync).toBeNull();
-    expect(state.auth_token).toBeNull();
     expect(state.username).toBeNull();
+    expect(state.sync_token).toBeNull();
     expect(state.machine_id).toMatch(/^[0-9a-f]{12}$/);
   });
 
@@ -45,9 +45,6 @@ describe('readState', () => {
     const existing = {
       synced_sessions: ['sess-1'],
       last_sync: '2026-03-27T10:00:00Z',
-      auth_token: 'ya29_test',
-      refresh_token: '1//test_refresh',
-      token_expiry: '2026-03-27T11:00:00Z',
       username: 'testuser',
       machine_id: 'abc123def456',
       sync_token: null,

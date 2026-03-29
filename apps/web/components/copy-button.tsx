@@ -16,18 +16,11 @@ export function CopyButton({ text, label = 'Copy Profile URL', className }: Copy
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     } catch {
-      const input = document.createElement('input');
-      input.value = text;
-      document.body.appendChild(input);
-      input.select();
-      document.execCommand('copy');
-      document.body.removeChild(input);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      // Clipboard API unavailable (e.g. non-HTTPS) — silently fail
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
