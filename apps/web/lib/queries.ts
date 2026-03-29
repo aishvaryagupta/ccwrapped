@@ -68,8 +68,8 @@ export async function fetchUserProfile(
 export async function fetchUserByProfileId(
   profileId: string,
 ): Promise<UserProfile | null> {
-  // Validate: must be 12 hex chars (matches profile_id_prefix column format)
-  if (!/^[a-f0-9]{8,12}$/.test(profileId)) return null;
+  // Validate: must be 8-12 hex chars with optional dashes (UUID prefix format)
+  if (!/^[a-f0-9-]{8,12}$/.test(profileId)) return null;
 
   const supabase = getClient();
   const { data } = await supabase

@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const profileId = searchParams.get('profile_id');
 
-  if (!profileId || !/^[a-f0-9]{8,12}$/.test(profileId)) {
+  if (!profileId || !/^[a-f0-9-]{8,12}$/.test(profileId)) {
     return NextResponse.json(
       { error: 'Invalid profile_id' },
       { status: 400 },
